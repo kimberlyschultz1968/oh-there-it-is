@@ -14,7 +14,7 @@
 <style>
   /* ---- Brand tokens (from the Oh, There It Is! brand sheet) ---- */
   :root{
-    --navy:#0D182A;
+    --navy:#0D1B2A;
     --teal:#0E7C73;
     --teal-dark:#0A5F58;
     --orange:#F2B233;
@@ -47,21 +47,12 @@
   .ic{display:inline-flex; flex:none; align-items:center; justify-content:center}
   .ic svg{width:100%; height:100%; display:block}
 
-  /* ---- Brand lockup (the logo: dashes + OH, + magnifier-pin + sparkle / THERE IT IS! / swoosh) ---- */
-  .lockup{text-align:center; color:var(--navy); font-family:var(--font-display); font-weight:800; line-height:1;
-    transform:rotate(-2deg)}
-  .wm-line1{display:flex; align-items:center; justify-content:center; gap:.06em; position:relative; width:fit-content; margin:0 auto}
-  .wm-dashes{position:absolute; left:-.62em; top:44%; transform:translateY(-50%); width:.46em; height:.95em; color:var(--navy)}
-  .wm-dashes svg{width:100%; height:100%}
-  .wm-line2{letter-spacing:.01em; margin-top:.08em}
-  .wm-glass{position:relative; width:.92em; height:.92em; display:inline-flex; margin-left:.05em}
-  .wm-glass > svg{width:100%; height:100%}
-  .wm-spark{position:absolute; top:-.3em; right:-.38em; width:.46em; height:.46em; color:var(--orange)}
-  .wm-spark svg{width:100%; height:100%}
-  .wm-swoosh{display:block; margin:.16em auto 0; width:5em; height:auto}
-  .lockup-lg{font-size:44px}
-  .lockup-md{font-size:26px}
-  .lockup-sm{font-size:17px}
+  /* ---- Brand lockup: Kim's actual logo artwork (logo.png, cut from the brand sheet) ---- */
+  .lockup{margin-left:auto; margin-right:auto; text-align:center}
+  .lockup img{width:100%; height:auto; display:block}
+  .lockup-lg{width:min(320px, 84%)}
+  .lockup-md{width:200px}
+  .lockup-sm{width:132px}
   .page-logo{margin-bottom:16px}
 
   /* ---- Screens ---- */
@@ -79,7 +70,7 @@
   /* ---- Welcome ---- */
   .welcome-wrap{padding-top:8dvh; text-align:center; display:flex; flex-direction:column; align-items:center}
   .welcome-tagline{color:var(--teal); font-style:italic; font-weight:700; font-size:15.5px; margin-top:18px; line-height:1.5}
-  .welcome-tagline .t2{color:var(--navy)}
+  .welcome-tagline .t2{color:var(--navy); font-style:normal}
   .welcome-feats{display:flex; flex-direction:column; gap:12px; margin:30px 0 28px; width:100%; text-align:left}
   .feat{display:flex; align-items:center; gap:14px; background:var(--white); border-radius:16px; padding:14px 16px; box-shadow:var(--shadow)}
   .feat .ic{width:38px; height:38px; border-radius:12px; background:var(--mint-soft); color:var(--teal-dark); padding:8px}
@@ -273,12 +264,9 @@
   #bottomnav .ic{width:21px; height:21px}
 
   /* ---- Brand footer (navy banner from the brand sheet) ---- */
-  .brand-footer{background:var(--navy); border-radius:16px; color:var(--white); text-align:center;
+  .brand-footer{background:#001531; border-radius:16px; color:var(--white); text-align:center;
     padding:16px 18px 15px; margin-top:30px}
-  .bf-script{font-family:'Caveat', cursive; font-size:26px; font-weight:700; line-height:1;
-    display:flex; align-items:center; justify-content:center; gap:9px}
-  .bf-script .ic{width:15px; height:15px; color:var(--orange)}
-  .bf-flourish{display:block; margin:2px auto 0; width:120px; height:auto}
+  .bf-script-img{display:block; margin:0 auto 4px; width:190px; max-width:78%; height:auto; border-radius:6px}
   .bf-line{font-size:12.5px; color:#E9EDF3; margin-top:9px; line-height:1.45; font-weight:600}
   .bf-teal{color:var(--mint); font-style:italic; font-weight:800}
 
@@ -1210,22 +1198,10 @@ $("#btn-erase").addEventListener("click", async e => {
 });
 
 /* ---------- Init ---------- */
-var LOCKUP_HTML =
-  '<div class="wm-line1">' +
-    '<span class="wm-dashes"><svg viewBox="0 0 12 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 7l6 2.4"/><path d="M2 14h6.5"/><path d="M3 20l6-2.4"/></svg></span>' +
-    'OH,<span class="wm-glass">' +
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">' +
-    '<circle cx="10.7" cy="10.7" r="6.8"/><line x1="16" y1="16" x2="21" y2="21"/>' +
-    '<path d="M10.7 6.9a3.1 3.1 0 0 1 3.1 3.1c0 2-3.1 4.6-3.1 4.6S7.6 12 7.6 10a3.1 3.1 0 0 1 3.1-3.1z" fill="#0E7C73" stroke="none"/>' +
-    '<circle cx="10.7" cy="9.9" r="1.1" fill="#F4F1EB" stroke="none"/></svg>' +
-    '<span class="wm-spark"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2 6.1 6.1 2-6.1 2-2 6.1-2-6.1-6.1-2 6.1-2z"/></svg></span>' +
-    '</span></div>' +
-  '<div class="wm-line2">THERE IT IS!</div>' +
-  '<svg class="wm-swoosh" viewBox="0 0 130 12" aria-hidden="true"><path d="M5 8 C 36 2, 94 2, 125 7" stroke="#0E7C73" stroke-width="4.5" fill="none" stroke-linecap="round"/></svg>';
+var LOCKUP_HTML = '<img src="logo.png" alt="Oh, There It Is!">';
 $$("[data-lockup]").forEach(el => { el.innerHTML = LOCKUP_HTML; });
 var FOOTER_HTML =
-  '<div class="bf-script"><span class="ic"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2 6.1 6.1 2-6.1 2-2 6.1-2-6.1-6.1-2 6.1-2z"/></svg></span>Oh, there it is!</div>' +
-  '<svg class="bf-flourish" viewBox="0 0 120 18" aria-hidden="true"><path d="M8 7 C 36 2, 84 2, 112 6" stroke="#F2B233" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M58 10.5c1.6-2 4.4-1 4.4 1 0 1.7-2.4 3.3-4.4 4.6-2-1.3-4.4-2.9-4.4-4.6 0-2 2.8-3 4.4-1z" fill="#F2B233"/></svg>' +
+  '<img class="bf-script-img" src="footer-script.png" alt="Oh, there it is!">' +
   '<p class="bf-line">The app that remembers where you put your stuff.</p>' +
   '<p class="bf-line"><span class="bf-teal">It\'s around here somewhere.</span> We\'ll remember where.</p>';
 $$("[data-footer]").forEach(el => { el.innerHTML = FOOTER_HTML; });
