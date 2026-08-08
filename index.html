@@ -7,18 +7,18 @@
 <meta name="theme-color" content="#0E7C73">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230E7C73'/%3E%3Ccircle cx='11' cy='11' r='5' fill='none' stroke='white' stroke-width='2'/%3E%3Cline x1='14.8' y1='14.8' x2='19' y2='19' stroke='white' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='11' cy='11' r='1.8' fill='%23F28233'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230E7C73'/%3E%3Ccircle cx='11' cy='11' r='5' fill='none' stroke='white' stroke-width='2'/%3E%3Cline x1='14.8' y1='14.8' x2='19' y2='19' stroke='white' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='11' cy='11' r='1.8' fill='%23F2B233'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Caveat:wght@600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   /* ---- Brand tokens (from the Oh, There It Is! brand sheet) ---- */
   :root{
     --navy:#0D182A;
     --teal:#0E7C73;
     --teal-dark:#0A5F58;
-    --orange:#F28233;
-    --orange-dark:#D96A1E;
+    --orange:#F2B233;
+    --orange-dark:#D89A22;
     --mint:#A8E0D6;
     --mint-soft:#DCEFEA;
     --cream:#F4F1EB;
@@ -47,9 +47,12 @@
   .ic{display:inline-flex; flex:none; align-items:center; justify-content:center}
   .ic svg{width:100%; height:100%; display:block}
 
-  /* ---- Brand lockup (the logo: OH, + magnifier-pin + sparkle / THERE IT IS! / swoosh) ---- */
-  .lockup{text-align:center; color:var(--navy); font-family:var(--font-display); font-weight:800; line-height:1}
-  .wm-line1{display:flex; align-items:center; justify-content:center; gap:.06em}
+  /* ---- Brand lockup (the logo: dashes + OH, + magnifier-pin + sparkle / THERE IT IS! / swoosh) ---- */
+  .lockup{text-align:center; color:var(--navy); font-family:var(--font-display); font-weight:800; line-height:1;
+    transform:rotate(-2deg)}
+  .wm-line1{display:flex; align-items:center; justify-content:center; gap:.06em; position:relative; width:fit-content; margin:0 auto}
+  .wm-dashes{position:absolute; left:-.62em; top:44%; transform:translateY(-50%); width:.46em; height:.95em; color:var(--navy)}
+  .wm-dashes svg{width:100%; height:100%}
   .wm-line2{letter-spacing:.01em; margin-top:.08em}
   .wm-glass{position:relative; width:.92em; height:.92em; display:inline-flex; margin-left:.05em}
   .wm-glass > svg{width:100%; height:100%}
@@ -58,6 +61,8 @@
   .wm-swoosh{display:block; margin:.16em auto 0; width:5em; height:auto}
   .lockup-lg{font-size:44px}
   .lockup-md{font-size:26px}
+  .lockup-sm{font-size:17px}
+  .page-logo{margin-bottom:16px}
 
   /* ---- Screens ---- */
   .screen{display:none}
@@ -73,7 +78,8 @@
 
   /* ---- Welcome ---- */
   .welcome-wrap{padding-top:8dvh; text-align:center; display:flex; flex-direction:column; align-items:center}
-  .welcome-tagline{color:var(--teal); font-style:italic; font-weight:700; font-size:15.5px; margin-top:18px}
+  .welcome-tagline{color:var(--teal); font-style:italic; font-weight:700; font-size:15.5px; margin-top:18px; line-height:1.5}
+  .welcome-tagline .t2{color:var(--navy)}
   .welcome-feats{display:flex; flex-direction:column; gap:12px; margin:30px 0 28px; width:100%; text-align:left}
   .feat{display:flex; align-items:center; gap:14px; background:var(--white); border-radius:16px; padding:14px 16px; box-shadow:var(--shadow)}
   .feat .ic{width:38px; height:38px; border-radius:12px; background:var(--mint-soft); color:var(--teal-dark); padding:8px}
@@ -112,7 +118,7 @@
   .item-row{display:flex; align-items:center; gap:12px; background:var(--white); border-radius:14px;
     padding:10px 14px 10px 10px; box-shadow:var(--shadow); margin-bottom:10px; width:100%; text-align:left}
   .thumb{width:52px; height:52px; border-radius:12px; background:var(--mint-soft); flex:none;
-    display:flex; align-items:center; justify-content:center; overflow:hidden; color:var(--navy)}
+    display:flex; align-items:center; justify-content:center; overflow:hidden; color:var(--teal)}
   .thumb img{width:100%; height:100%; object-fit:cover}
   .thumb .ic{width:24px; height:24px}
   .item-meta{min-width:0; flex:1}
@@ -205,19 +211,19 @@
   .chips{display:flex; flex-wrap:wrap; gap:8px}
   .chip{background:var(--white); border:1.5px solid var(--line); border-radius:999px; padding:9px 14px;
     font-weight:800; font-size:13.5px; display:inline-flex; align-items:center; gap:7px; color:var(--navy)}
-  .chip .ic{width:15px; height:15px; color:var(--navy)}
+  .chip .ic{width:15px; height:15px; color:var(--teal)}
   .chip.on{background:var(--teal); border-color:var(--teal); color:var(--white)}
   .chip.on .ic{color:var(--white)}
   #f-important.on{background:var(--orange); border-color:var(--orange)}
   #loc-custom-wrap{display:none; margin-top:10px}
 
   /* ---- My Things ---- */
-  .seg{display:grid; grid-template-columns:1fr 1fr 1fr; background:var(--white); border-radius:999px; padding:4px;
+  .seg{display:grid; grid-template-columns:1fr 1fr; background:var(--white); border-radius:999px; padding:4px;
     border:1.5px solid var(--line); margin:14px 0}
   .seg button{border-radius:999px; padding:9px 2px; font-weight:800; font-size:12.5px; color:var(--muted)}
   .seg button.on{background:var(--teal); color:var(--white)}
   .group-head{display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:12px 4px 8px}
-  .group-head .g-icon{width:20px; height:20px; color:var(--navy)}
+  .group-head .g-icon{width:20px; height:20px; color:var(--teal)}
   .group-head .g-name{font-weight:900; font-size:15px; flex:1}
   .group-head .g-count{background:var(--mint-soft); color:var(--teal-dark); font-weight:800; font-size:12px;
     border-radius:999px; padding:3px 10px}
@@ -260,11 +266,21 @@
   /* ---- Bottom nav ---- */
   #bottomnav{position:fixed; bottom:12px; left:50%; transform:translateX(-50%); width:min(400px, calc(100% - 28px));
     background:var(--white); border-radius:22px; box-shadow:0 8px 26px rgba(13,24,42,.14);
-    display:grid; grid-template-columns:1fr 1fr 1fr; padding:7px; z-index:30}
+    display:grid; grid-template-columns:1fr 1fr 1fr 1fr; padding:7px; z-index:30}
   #bottomnav button{display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 4px;
     border-radius:15px; color:var(--faint); font-weight:800; font-size:11px}
   #bottomnav button.on{color:var(--teal); background:var(--mint-soft)}
   #bottomnav .ic{width:21px; height:21px}
+
+  /* ---- Brand footer (navy banner from the brand sheet) ---- */
+  .brand-footer{background:var(--navy); border-radius:16px; color:var(--white); text-align:center;
+    padding:16px 18px 15px; margin-top:30px}
+  .bf-script{font-family:'Caveat', cursive; font-size:26px; font-weight:700; line-height:1;
+    display:flex; align-items:center; justify-content:center; gap:9px}
+  .bf-script .ic{width:15px; height:15px; color:var(--orange)}
+  .bf-flourish{display:block; margin:2px auto 0; width:120px; height:auto}
+  .bf-line{font-size:12.5px; color:#E9EDF3; margin-top:9px; line-height:1.45; font-weight:600}
+  .bf-teal{color:var(--mint); font-style:italic; font-weight:800}
 
   /* ---- Toast ---- */
   #toast{position:fixed; bottom:92px; left:50%; transform:translateX(-50%) translateY(20px); opacity:0;
@@ -284,12 +300,8 @@
   <!-- ================= WELCOME ================= -->
   <section id="s-welcome" class="screen">
     <div class="welcome-wrap">
-      <div class="lockup lockup-lg">
-        <div class="wm-line1">OH,<span class="wm-glass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="10.7" cy="10.7" r="6.8"/><line x1="16" y1="16" x2="21" y2="21"/><path d="M10.7 6.9a3.1 3.1 0 0 1 3.1 3.1c0 2-3.1 4.6-3.1 4.6S7.6 12 7.6 10a3.1 3.1 0 0 1 3.1-3.1z" fill="#0E7C73" stroke="none"/><circle cx="10.7" cy="9.9" r="1.1" fill="#F4F1EB" stroke="none"/></svg><span class="wm-spark"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2 6.1 6.1 2-6.1 2-2 6.1-2-6.1-6.1-2 6.1-2z"/></svg></span></span></div>
-        <div class="wm-line2">THERE IT IS!</div>
-        <svg class="wm-swoosh" viewBox="0 0 130 12" aria-hidden="true"><path d="M5 8 C 36 2, 94 2, 125 7" stroke="#0E7C73" stroke-width="4.5" fill="none" stroke-linecap="round"/></svg>
-      </div>
-      <p class="welcome-tagline">It's around here somewhere. We'll remember where.</p>
+      <div class="lockup lockup-lg" data-lockup></div>
+      <p class="welcome-tagline">It's around here somewhere.<br><span class="t2">We'll remember where.</span></p>
       <div class="welcome-feats">
         <div class="feat"><span class="ic" data-ic="camera"></span>
           <div><b>Put it away</b><span>Snap a photo and say where it went.</span></div></div>
@@ -300,11 +312,13 @@
       </div>
       <button class="btn primary" id="btn-get-started">GET STARTED</button>
       <p class="welcome-note">Free · Private — your things stay on your own device</p>
+      <footer class="brand-footer" data-footer style="width:100%"></footer>
     </div>
   </section>
 
   <!-- ================= HOME ================= -->
   <section id="s-home" class="screen active">
+    <div class="lockup lockup-sm page-logo" data-lockup aria-hidden="true"></div>
     <header class="home-head">
       <p class="eyebrow"><span id="greeting">Good morning</span> <span class="ic" data-ic="sparkle"></span></p>
       <h1>What are you looking for?</h1>
@@ -331,17 +345,14 @@
       <h2>Recently added</h2>
     </div>
     <div id="recent-list"></div>
+    <footer class="brand-footer" data-footer></footer>
   </section>
 
   <!-- ================= FIND ================= -->
   <section id="s-find" class="screen">
     <!-- searching state -->
     <div id="find-searching" class="find-wrap">
-      <div class="lockup lockup-md" aria-hidden="true">
-        <div class="wm-line1">OH,<span class="wm-glass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="10.7" cy="10.7" r="6.8"/><line x1="16" y1="16" x2="21" y2="21"/><path d="M10.7 6.9a3.1 3.1 0 0 1 3.1 3.1c0 2-3.1 4.6-3.1 4.6S7.6 12 7.6 10a3.1 3.1 0 0 1 3.1-3.1z" fill="#0E7C73" stroke="none"/><circle cx="10.7" cy="9.9" r="1.1" fill="#F4F1EB" stroke="none"/></svg><span class="wm-spark"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2 6.1 6.1 2-6.1 2-2 6.1-2-6.1-6.1-2 6.1-2z"/></svg></span></span></div>
-        <div class="wm-line2">THERE IT IS!</div>
-        <svg class="wm-swoosh" viewBox="0 0 130 12" aria-hidden="true"><path d="M5 8 C 36 2, 94 2, 125 7" stroke="#0E7C73" stroke-width="4.5" fill="none" stroke-linecap="round"/></svg>
-      </div>
+      <div class="lockup lockup-md" data-lockup aria-hidden="true"></div>
       <div class="pulse-ring" aria-hidden="true"><span class="ic" data-ic="search"></span></div>
       <h1>Searching…</h1>
       <p class="sub" id="find-query-label" style="margin:6px 0 14px"></p>
@@ -356,11 +367,7 @@
     <!-- found state -->
     <div id="find-result" class="find-wrap" style="display:none">
       <p class="found-burst"><span class="ic" data-ic="sparkle"></span> FOUND IT <span class="ic" data-ic="sparkle"></span></p>
-      <div class="lockup lockup-md">
-        <div class="wm-line1">OH,<span class="wm-glass"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="10.7" cy="10.7" r="6.8"/><line x1="16" y1="16" x2="21" y2="21"/><path d="M10.7 6.9a3.1 3.1 0 0 1 3.1 3.1c0 2-3.1 4.6-3.1 4.6S7.6 12 7.6 10a3.1 3.1 0 0 1 3.1-3.1z" fill="#0E7C73" stroke="none"/><circle cx="10.7" cy="9.9" r="1.1" fill="#F4F1EB" stroke="none"/></svg><span class="wm-spark"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2 6.1 6.1 2-6.1 2-2 6.1-2-6.1-6.1-2 6.1-2z"/></svg></span></span></div>
-        <div class="wm-line2">THERE IT IS!</div>
-        <svg class="wm-swoosh" viewBox="0 0 130 12" aria-hidden="true"><path d="M5 8 C 36 2, 94 2, 125 7" stroke="#0E7C73" stroke-width="4.5" fill="none" stroke-linecap="round"/></svg>
-      </div>
+      <div class="lockup lockup-md" data-lockup></div>
       <div class="result-card">
         <div class="result-photo" id="result-photo"></div>
         <div class="result-name" id="result-name"></div>
@@ -377,28 +384,33 @@
 
     <!-- nothing found state -->
     <div id="find-empty" class="find-wrap" style="display:none">
+      <div class="lockup lockup-md" data-lockup aria-hidden="true"></div>
       <div class="pulse-ring" style="animation:none" aria-hidden="true"><span class="ic" data-ic="search"></span></div>
       <h1 id="find-empty-title">Nothing by that name yet.</h1>
       <p class="sub" id="find-empty-sub" style="margin:10px 0 20px"></p>
       <button class="btn secondary" id="btn-add-from-empty">PUT IT AWAY NOW</button>
       <button class="linkish" data-go-home>Back home</button>
     </div>
+    <footer class="brand-footer" data-footer></footer>
   </section>
 
   <!-- ================= SAVED CONFIRMATION ================= -->
   <section id="s-saved" class="screen">
     <div class="saved-wrap">
+      <div class="lockup lockup-sm page-logo" data-lockup aria-hidden="true"></div>
       <div class="saved-check"><span class="ic" data-ic="check"></span></div>
       <h1>Got it.</h1>
       <p class="sub">We'll remember where it is.</p>
       <div id="saved-summary"></div>
       <button class="btn secondary" id="btn-add-another"><span class="ic" data-ic="plus"></span> ADD ANOTHER</button>
       <button class="btn primary" id="btn-saved-done">DONE</button>
+      <footer class="brand-footer" data-footer style="width:100%"></footer>
     </div>
   </section>
 
   <!-- ================= ADD / EDIT ================= -->
   <section id="s-add" class="screen">
+    <div class="lockup lockup-sm page-logo" data-lockup aria-hidden="true"></div>
     <header style="margin:6px 0 4px">
       <p class="eyebrow"><span id="add-eyebrow">I Put It Away</span></p>
       <h1 id="add-title">Let's remember this one.</h1>
@@ -465,10 +477,12 @@
 
     <button class="btn primary" id="btn-save">SAVE — WE'LL REMEMBER</button>
     <button class="linkish" data-go-home>Cancel</button>
+    <footer class="brand-footer" data-footer></footer>
   </section>
 
   <!-- ================= MY THINGS ================= -->
   <section id="s-things" class="screen">
+    <div class="lockup lockup-sm page-logo" data-lockup aria-hidden="true"></div>
     <header style="margin:6px 0 4px">
       <p class="eyebrow">My Things</p>
       <h1>Everything, in its place.</h1>
@@ -482,14 +496,26 @@
     <div class="seg" role="tablist">
       <button id="seg-loc" class="on" role="tab">By Location</button>
       <button id="seg-cat" role="tab">By Category</button>
-      <button id="seg-imp" role="tab">Important</button>
     </div>
 
     <div id="things-list"></div>
+    <footer class="brand-footer" data-footer></footer>
+  </section>
+
+  <!-- ================= IMPORTANT ================= -->
+  <section id="s-important" class="screen">
+    <div class="lockup lockup-sm page-logo" data-lockup aria-hidden="true"></div>
+    <header style="margin:6px 0 14px">
+      <p class="eyebrow">Important</p>
+      <h1>Your starred things.</h1>
+    </header>
+    <div id="important-list"></div>
+    <footer class="brand-footer" data-footer></footer>
   </section>
 
   <!-- ================= SETTINGS ================= -->
   <section id="s-settings" class="screen">
+    <div class="lockup lockup-sm page-logo" data-lockup aria-hidden="true"></div>
     <header style="margin:6px 0 16px">
       <p class="eyebrow">Settings</p>
       <h1>Peace of mind.</h1>
@@ -520,7 +546,8 @@
       <button class="btn danger" id="btn-erase">Erase everything</button>
     </div>
 
-    <p class="foot-note">Oh, There It Is! · Version 1.1<br>The app that remembers where you put your stuff.</p>
+    <footer class="brand-footer" data-footer></footer>
+    <p class="foot-note">Version 1.3</p>
   </section>
 
 </main>
@@ -529,6 +556,7 @@
 <nav id="bottomnav" aria-label="Main">
   <button data-go="home" class="on"><span class="ic" data-ic="home"></span> Home</button>
   <button data-go="things"><span class="ic" data-ic="grid"></span> My Things</button>
+  <button data-go="important"><span class="ic" data-ic="star"></span> Important</button>
   <button data-go="settings"><span class="ic" data-ic="sliders"></span> Settings</button>
 </nav>
 
@@ -559,11 +587,15 @@
 function svg(inner){
   return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + inner + '</svg>';
 }
+/* Filled silhouette icons, matching the brand sheet's solid teal icon set */
+function fsvg(inner){
+  return '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' + inner + '</svg>';
+}
 const I = {
   search:  svg('<circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.6" y1="15.6" x2="21" y2="21"/>'),
   logo:    svg('<circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.6" y1="15.6" x2="21" y2="21"/><circle cx="10.5" cy="10.5" r="2" fill="currentColor" stroke="none"/>'),
-  pin:     svg('<path d="M12 21s-6.2-5.4-6.2-10.1a6.2 6.2 0 1 1 12.4 0C18.2 15.6 12 21 12 21z"/><circle cx="12" cy="10.7" r="2.2"/>'),
-  box:     svg('<path d="M3.5 8 12 4l8.5 4v8.5L12 20.5l-8.5-4z"/><path d="M3.5 8 12 12l8.5-4"/><path d="M12 12v8.5"/>'),
+  pin:     fsvg('<path fill-rule="evenodd" d="M12 21.5S5.5 15.9 5.5 10.9a6.5 6.5 0 1 1 13 0c0 5-6.5 10.6-6.5 10.6zM12 8.6a2.3 2.3 0 1 0 0 4.6 2.3 2.3 0 0 0 0-4.6z"/>'),
+  box:     fsvg('<path d="M12 2.6 20.8 6.7 12 10.8 3.2 6.7 12 2.6z"/><path d="M2.8 8.4l8.3 3.9v8.9L2.8 17.3V8.4z"/><path d="M21.2 8.4v8.9l-8.3 3.9v-8.9l8.3-3.9z"/>'),
   camera:  svg('<rect x="3" y="7" width="18" height="13" rx="2.5"/><circle cx="12" cy="13.2" r="3.4"/><path d="M8.6 7l1.3-2.5h4.2L15.4 7"/>'),
   image:   svg('<rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="8.3" cy="10" r="1.5"/><path d="M4.5 17l4.6-4.6 3.6 3.6 2.8-2.8 4 3.8"/>'),
   mic:     svg('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><line x1="12" y1="18" x2="12" y2="21"/>'),
@@ -580,24 +612,24 @@ const I = {
   trash:   svg('<path d="M4 7h16"/><path d="M9.5 7V5h5v2"/><path d="M6.5 7l1 13h9l1-13"/>'),
   pencil:  svg('<path d="M4 20l1-4L16.4 4.6a2.05 2.05 0 0 1 3 3L8 19z"/>'),
   archive: svg('<rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10.5h14V9"/><path d="M9.5 13h5"/>'),
-  car:     svg('<path d="M3.5 10.5 12 4l8.5 6.5"/><path d="M5.5 9v11"/><path d="M18.5 9v11"/><rect x="8" y="12" width="8" height="8"/><path d="M8 14.7h8"/><path d="M8 17.4h8"/>'),
-  pot:     svg('<path d="M5 11.5h14v3.5a4.5 4.5 0 0 1-4.5 4.5h-5A4.5 4.5 0 0 1 5 15z"/><path d="M3.5 11.5h17"/><path d="M12 9v2.5"/><circle cx="12" cy="7.8" r="1.2"/>'),
-  briefcase:svg('<rect x="3" y="8" width="18" height="12" rx="2"/><path d="M9 8V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/>'),
-  bed:     svg('<path d="M3.5 18.5v-11"/><path d="M3.5 15.5h17v3"/><path d="M20.5 15.5V13a2.5 2.5 0 0 0-2.5-2.5H10v5"/><circle cx="6.7" cy="12.7" r="1.7"/>'),
-  sofa:    svg('<path d="M5.5 11V9.5a3 3 0 0 1 3-3h7a3 3 0 0 1 3 3V11"/><path d="M3.5 17.5v-3.4a1.9 1.9 0 0 1 3.8 0v.9h9.4v-.9a1.9 1.9 0 0 1 3.8 0v3.4z"/><path d="M5.5 17.5v2"/><path d="M18.5 17.5v2"/>'),
-  washer:  svg('<rect x="4.5" y="3.5" width="15" height="17" rx="2"/><circle cx="12" cy="13" r="4"/><circle cx="8" cy="6.3" r="0.4" fill="currentColor"/><circle cx="10.5" cy="6.3" r="0.4" fill="currentColor"/>'),
-  stairs:  svg('<path d="M4 20h4v-4h4v-4h4V8h4"/>'),
-  attic:   svg('<path d="M3 12L12 4l9 8"/><rect x="9" y="13.5" width="6" height="6"/>'),
-  door:    svg('<rect x="5.5" y="3.5" width="13" height="17" rx="1"/><line x1="12" y1="3.5" x2="12" y2="20.5"/><circle cx="9.8" cy="12" r="0.6" fill="currentColor"/><circle cx="14.2" cy="12" r="0.6" fill="currentColor"/>'),
-  tree:    svg('<circle cx="12" cy="12" r="4"/><path d="M12 3.5v2"/><path d="M12 18.5v2"/><path d="M3.5 12h2"/><path d="M18.5 12h2"/><path d="M6 6l1.4 1.4"/><path d="M16.6 16.6 18 18"/><path d="M18 6l-1.4 1.4"/><path d="M7.4 16.6 6 18"/>'),
-  wrench:  svg('<path d="M14.9 6.2a4.3 4.3 0 0 0-5.8 5.4L3.5 17.2 6.8 20.5l5.6-5.6a4.3 4.3 0 0 0 5.4-5.8L15 11.9l-2.9-.7-.7-2.9z"/>'),
-  plug:    svg('<path d="M9 3.5V8"/><path d="M15 3.5V8"/><path d="M7 8h10v3a5 5 0 0 1-10 0z"/><path d="M12 16v4.5"/>'),
-  file:    svg('<path d="M6 3.5h8l4 4v13H6z"/><path d="M14 3.5V8h4"/><path d="M9 12.5h6"/><path d="M9 16h6"/>'),
-  bauble:  svg('<path d="M12 3.5 15.8 9h-2.4l3.4 5h-2.8l3 4.5H7l3-4.5H7.2l3.4-5H8.2z"/><path d="M12 18.5V21"/>'),
-  heart:   svg('<path d="M12 20s-7.2-4.7-7.2-10A4.1 4.1 0 0 1 12 7.4 4.1 4.1 0 0 1 19.2 10C19.2 15.3 12 20 12 20z"/>'),
-  shirt:   svg('<path d="M8 4L3.5 7l2 3 2-1.2V20h9V8.8l2 1.2 2-3L16 4a4 4 0 0 1-8 0z"/>'),
-  block:   svg('<rect x="4.5" y="4.5" width="15" height="15" rx="2"/><path d="M4.5 12h15"/><path d="M12 4.5v15"/>'),
-  tag:     svg('<path d="M3.5 11.5v-8h8l9 9-8 8z"/><circle cx="7.8" cy="8" r="1.4"/>')
+  car:     fsvg('<path fill-rule="evenodd" d="M12 2.8 22 9.8V21H2V9.8L12 2.8zM17 13H7v8h10v-8z"/><rect x="8.2" y="14.6" width="7.6" height="1.6" rx="0.8"/><rect x="8.2" y="17.6" width="7.6" height="1.6" rx="0.8"/>'),
+  pot:     fsvg('<rect x="4" y="10.5" width="16" height="9.5" rx="4"/><rect x="2.5" y="9.3" width="19" height="2.2" rx="1.1"/><rect x="10.9" y="6.3" width="2.2" height="3.4" rx="1"/><circle cx="12" cy="5.4" r="1.7"/>'),
+  briefcase:fsvg('<path fill-rule="evenodd" d="M11.2 3.5h1.6a2.4 2.4 0 0 1 2.4 2.4V7H19a2.5 2.5 0 0 1 2.5 2.5v8A2.5 2.5 0 0 1 19 20H5a2.5 2.5 0 0 1-2.5-2.5v-8A2.5 2.5 0 0 1 5 7h3.8V5.9a2.4 2.4 0 0 1 2.4-2.4zm2.1 3.5V5.9a.5.5 0 0 0-.5-.5h-1.6a.5.5 0 0 0-.5.5V7h2.6zm-10.8 5.3h19v1.5h-19v-1.5z"/>'),
+  bed:     fsvg('<rect x="2.5" y="5.5" width="2.6" height="15" rx="1.3"/><path d="M5.1 11h13.4a3 3 0 0 1 3 3v6.5h-2.6v-2.8H5.1V11z"/><circle cx="8" cy="9.2" r="2"/>'),
+  sofa:    fsvg('<path d="M4.5 10.6V9a3 3 0 0 1 3-3h9a3 3 0 0 1 3 3v1.6a2.8 2.8 0 0 0-1.9 2.6v.8H6.4v-.8a2.8 2.8 0 0 0-1.9-2.6z"/><path d="M2.2 13.4a1.9 1.9 0 0 1 3.8 0v1.2h12v-1.2a1.9 1.9 0 0 1 3.8 0V19a1 1 0 0 1-1 1h-1.3l-.4-1.4H4.9L4.5 20H3.2a1 1 0 0 1-1-1v-5.6z"/>'),
+  washer:  fsvg('<path fill-rule="evenodd" d="M4.5 3h15A1.5 1.5 0 0 1 21 4.5v15a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 19.5v-15A1.5 1.5 0 0 1 4.5 3zM12 8.3a5.2 5.2 0 1 0 0 10.4 5.2 5.2 0 0 0 0-10.4zm0 2.3a2.9 2.9 0 1 1 0 5.8 2.9 2.9 0 0 1 0-5.8zM6 4.9h1.8v1.6H6V4.9z"/>'),
+  stairs:  fsvg('<path d="M3 20.5v-3.8h4.2v-4h4.2v-4h4.2V4.5H21v16H3z"/>'),
+  attic:   fsvg('<path fill-rule="evenodd" d="M12 3 22 11.5h-2.7V21H4.7v-9.5H2L12 3zm2.5 11h-5v5h5v-5z"/>'),
+  door:    fsvg('<path fill-rule="evenodd" d="M5 3h6.6v18H5V3zm4.7 8a.9.9 0 1 0 0 1.8.9.9 0 0 0 0-1.8z"/><path fill-rule="evenodd" d="M12.4 3H19v18h-6.6V3zm1.9 8a.9.9 0 1 0 0 1.8.9.9 0 0 0 0-1.8z"/>'),
+  tree:    fsvg('<circle cx="12" cy="12" r="4.2"/><path d="M11.1 2.5h1.8v3h-1.8zM11.1 18.5h1.8v3h-1.8zM2.5 11.1h3v1.8h-3zM18.5 11.1h3v1.8h-3zM5 6.3l1.3-1.3 2.1 2.1-1.3 1.3zM15.6 16.9l1.3-1.3 2.1 2.1-1.3 1.3zM6.3 19 5 17.7l2.1-2.1 1.3 1.3zM16.9 8.4l-1.3-1.3 2.1-2.1L19 6.3z"/>'),
+  wrench:  fsvg('<path d="M14.6 5.8a4.6 4.6 0 0 0-5.5 6L3.2 17.7a1.6 1.6 0 0 0 0 2.3l.8.8a1.6 1.6 0 0 0 2.3 0l5.9-5.9a4.6 4.6 0 0 0 6-5.5l-2.9 2.9-2.9-.8-.8-2.9 2.9-2.9z"/>'),
+  plug:    fsvg('<path d="M8.2 3.2a1 1 0 0 1 2 0V8h3.6V3.2a1 1 0 0 1 2 0V8h.7a1.5 1.5 0 0 1 1.5 1.5V11a6 6 0 0 1-4.9 5.9v2.9a1.1 1.1 0 0 1-2.2 0v-2.9A6 6 0 0 1 6 11V9.5A1.5 1.5 0 0 1 7.5 8h.7V3.2z"/>'),
+  file:    fsvg('<path fill-rule="evenodd" d="M5.5 2.8h8.5l5.5 5.5v12.9H5.5V2.8zM14 2.8l5.5 5.5H14V2.8zM8.5 12.3h7v1.5h-7v-1.5zm0 3.5h7v1.5h-7v-1.5z"/>'),
+  bauble:  fsvg('<path d="M12 2.6 16.5 9h-2.2l3.7 5.4h-2.6l3.2 4.6H5.4l3.2-4.6H6L9.7 9H7.5L12 2.6z"/><rect x="10.8" y="19" width="2.4" height="2.8" rx="0.6"/>'),
+  heart:   fsvg('<path d="M12 20.3S4.3 15.4 4.3 9.9A4.3 4.3 0 0 1 12 7.4a4.3 4.3 0 0 1 7.7 2.5c0 5.5-7.7 10.4-7.7 10.4z"/>'),
+  shirt:   fsvg('<path d="M8.2 3.5a3.8 3.8 0 0 0 7.6 0l4.7 3.1-2 3-1.9-1.1V20.5H7.4V8.5L5.5 9.6l-2-3 4.7-3.1z"/>'),
+  block:   fsvg('<path fill-rule="evenodd" d="M4.5 4.5h15v15h-15v-15zm6.7 1.8H6.3v4.9h4.9V6.3zm1.6 0v4.9h4.9V6.3h-4.9zm-1.6 6.5H6.3v4.9h4.9v-4.9zm1.6 4.9v-4.9h4.9v4.9h-4.9z"/>'),
+  tag:     fsvg('<circle cx="5.5" cy="12" r="2.1"/><circle cx="12" cy="12" r="2.1"/><circle cx="18.5" cy="12" r="2.1"/>')
 };
 const LOC_ICONS = {"Garage":"car","Kitchen":"pot","Office":"briefcase","Bedroom":"bed","Living Room":"sofa",
   "Laundry":"washer","Basement":"stairs","Attic":"attic","Closet":"door","Storage":"box","Outside":"tree","Somewhere else":"pin"};
@@ -703,6 +735,7 @@ function go(name){
   window.scrollTo({ top: 0 });
   if (name === "home") renderHome();
   if (name === "things") renderThings();
+  if (name === "important") renderImportant();
   if (name === "settings") renderSettings();
 }
 
@@ -746,14 +779,6 @@ function renderThings(){
   if (q) list = list.filter(it =>
     (it.name + " " + it.location + " " + (it.spot||"") + " " + (it.category||"") + " " + (it.notes||"")).toLowerCase().includes(q));
 
-  if (groupMode === "important"){
-    const imp = list.filter(it => it.important && !it.archived);
-    $("#things-list").innerHTML = imp.length
-      ? imp.map(it => itemRowHTML(it)).join("")
-      : '<div class="empty-card">Nothing marked Important yet.<br>Star a thing when you put it away.</div>';
-    return;
-  }
-
   const active = list.filter(it => !it.archived);
   const archived = list.filter(it => it.archived);
 
@@ -790,6 +815,13 @@ function renderThings(){
     html += groupHTML("Archived", I.archive, archived.map(it => itemRowHTML(it)).join(""), archived.length, "archived-group closed");
   }
   $("#things-list").innerHTML = html;
+}
+
+function renderImportant(){
+  const imp = items.filter(it => it.important && !it.archived).sort((a,b) => b.createdAt - a.createdAt);
+  $("#important-list").innerHTML = imp.length
+    ? imp.map(it => itemRowHTML(it)).join("")
+    : '<div class="empty-card">Nothing marked Important yet.<br><b>Star a thing</b> when you put it away and it will live here.</div>';
 }
 
 function renderSettings(){
@@ -1006,6 +1038,7 @@ function closeDetail(){
 function refreshActiveScreen(){
   const active = $(".screen.active");
   if (active && active.id === "s-things") renderThings();
+  else if (active && active.id === "s-important") renderImportant();
   else if (active && active.id === "s-settings") renderSettings();
   else renderHome();
 }
@@ -1099,10 +1132,7 @@ document.addEventListener("click", e => {
   }
 });
 
-$("#btn-get-started").addEventListener("click", () => {
-  localStorage.setItem("otii-welcomed", "1");
-  go("home");
-});
+$("#btn-get-started").addEventListener("click", () => go("home"));
 $("#home-search-form").addEventListener("submit", e => { e.preventDefault(); startFind($("#home-search").value); });
 $("#btn-find").addEventListener("click", () => startFind($("#home-search").value));
 $("#btn-add").addEventListener("click", () => openAdd());
@@ -1133,7 +1163,6 @@ function setSeg(mode, btn){
 }
 $("#seg-loc").addEventListener("click", e => setSeg("location", e.currentTarget));
 $("#seg-cat").addEventListener("click", e => setSeg("category", e.currentTarget));
-$("#seg-imp").addEventListener("click", e => setSeg("important", e.currentTarget));
 
 $("#sheet-close").addEventListener("click", closeDetail);
 $("#sheet-backdrop").addEventListener("click", closeDetail);
@@ -1181,13 +1210,31 @@ $("#btn-erase").addEventListener("click", async e => {
 });
 
 /* ---------- Init ---------- */
+var LOCKUP_HTML =
+  '<div class="wm-line1">' +
+    '<span class="wm-dashes"><svg viewBox="0 0 12 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 7l6 2.4"/><path d="M2 14h6.5"/><path d="M3 20l6-2.4"/></svg></span>' +
+    'OH,<span class="wm-glass">' +
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">' +
+    '<circle cx="10.7" cy="10.7" r="6.8"/><line x1="16" y1="16" x2="21" y2="21"/>' +
+    '<path d="M10.7 6.9a3.1 3.1 0 0 1 3.1 3.1c0 2-3.1 4.6-3.1 4.6S7.6 12 7.6 10a3.1 3.1 0 0 1 3.1-3.1z" fill="#0E7C73" stroke="none"/>' +
+    '<circle cx="10.7" cy="9.9" r="1.1" fill="#F4F1EB" stroke="none"/></svg>' +
+    '<span class="wm-spark"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2 6.1 6.1 2-6.1 2-2 6.1-2-6.1-6.1-2 6.1-2z"/></svg></span>' +
+    '</span></div>' +
+  '<div class="wm-line2">THERE IT IS!</div>' +
+  '<svg class="wm-swoosh" viewBox="0 0 130 12" aria-hidden="true"><path d="M5 8 C 36 2, 94 2, 125 7" stroke="#0E7C73" stroke-width="4.5" fill="none" stroke-linecap="round"/></svg>';
+$$("[data-lockup]").forEach(el => { el.innerHTML = LOCKUP_HTML; });
+var FOOTER_HTML =
+  '<div class="bf-script"><span class="ic"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2 6.1 6.1 2-6.1 2-2 6.1-2-6.1-6.1-2 6.1-2z"/></svg></span>Oh, there it is!</div>' +
+  '<svg class="bf-flourish" viewBox="0 0 120 18" aria-hidden="true"><path d="M8 7 C 36 2, 84 2, 112 6" stroke="#F2B233" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M58 10.5c1.6-2 4.4-1 4.4 1 0 1.7-2.4 3.3-4.4 4.6-2-1.3-4.4-2.9-4.4-4.6 0-2 2.8-3 4.4-1z" fill="#F2B233"/></svg>' +
+  '<p class="bf-line">The app that remembers where you put your stuff.</p>' +
+  '<p class="bf-line"><span class="bf-teal">It\'s around here somewhere.</span> We\'ll remember where.</p>';
+$$("[data-footer]").forEach(el => { el.innerHTML = FOOTER_HTML; });
 $$("[data-ic]").forEach(el => { el.innerHTML = icon(el.dataset.ic); });
 if (!SR) $$(".mic-btn").forEach(b => b.style.display = "none");
 buildChips();
 dbAll().then(all => {
   items = all;
-  if (!localStorage.getItem("otii-welcomed")) go("welcome");
-  else renderHome();
+  go("welcome");
 }).catch(() => {
   toast("Storage isn't available in this browser.");
   renderHome();
