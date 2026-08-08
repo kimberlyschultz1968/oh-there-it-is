@@ -535,7 +535,7 @@
     </div>
 
     <footer class="brand-footer" data-footer></footer>
-    <p class="foot-note">Version 1.3</p>
+    <p class="foot-note">Version 1.5 · <a href="privacy.html" style="color:inherit">Privacy</a></p>
   </section>
 
 </main>
@@ -1208,6 +1208,7 @@ $$("[data-footer]").forEach(el => { el.innerHTML = FOOTER_HTML; });
 $$("[data-ic]").forEach(el => { el.innerHTML = icon(el.dataset.ic); });
 if (!SR) $$(".mic-btn").forEach(b => b.style.display = "none");
 buildChips();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 dbAll().then(all => {
   items = all;
   go("welcome");
