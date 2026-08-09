@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.kimberlyschultz1968.ohthereitis",
+        "sha256_cert_fingerprints": ["F3:AC:CE:53:1D:30:59:38:DD:7B:A1:CF:20:6F:95:18:15:FA:09:33:13:00:4B:62:ED:C6:76:11:13:81:33:21"]
+      }
+    }]
