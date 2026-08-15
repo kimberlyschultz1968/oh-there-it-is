@@ -270,6 +270,13 @@
   .bf-line{font-size:12.5px; color:#E9EDF3; margin-top:9px; line-height:1.45; font-weight:600}
   .bf-teal{color:var(--mint); font-style:italic; font-weight:800}
 
+  /* ---- Free-limit meter ---- */
+  .meter{display:flex; align-items:center; gap:10px; background:var(--white); border:1.5px solid var(--line);
+    border-radius:999px; padding:8px 14px; margin:-10px 0 22px; font-size:12.5px; font-weight:800; color:var(--muted)}
+  .meter-bar{flex:1; height:6px; border-radius:99px; background:var(--mint-soft); overflow:hidden}
+  .meter-fill{height:100%; border-radius:99px; background:var(--teal); width:0%; transition:width .3s ease}
+  .meter-fill.warn{background:var(--orange)}
+
   /* ---- Toast ---- */
   #toast{position:fixed; bottom:92px; left:50%; transform:translateX(-50%) translateY(20px); opacity:0;
     background:var(--navy); color:var(--white); font-weight:800; font-size:14px; border-radius:999px;
@@ -327,6 +334,11 @@
         <span class="bb-icon"><span class="ic" data-ic="box"></span></span>
         <span class="bb-label">I PUT IT<br>AWAY</span>
       </button>
+    </div>
+
+    <div id="meter" class="meter" style="display:none" role="status">
+      <div class="meter-bar"><div id="meter-fill" class="meter-fill"></div></div>
+      <span id="meter-text"></span>
     </div>
 
     <div class="sec-title">
@@ -392,6 +404,32 @@
       <div id="saved-summary"></div>
       <button class="btn secondary" id="btn-add-another"><span class="ic" data-ic="plus"></span> ADD ANOTHER</button>
       <button class="btn primary" id="btn-saved-done">DONE</button>
+      <footer class="brand-footer" data-footer style="width:100%"></footer>
+    </div>
+  </section>
+
+  <!-- ================= PLUS (upgrade) ================= -->
+  <section id="s-plus" class="screen">
+    <div class="saved-wrap">
+      <div class="lockup lockup-md page-logo" data-lockup aria-hidden="true"></div>
+      <h1 id="plus-title">Go Plus</h1>
+      <p class="sub" style="margin-top:8px">That means the app is earning its keep. Unlock unlimited — once, forever.</p>
+      <div class="card" style="text-align:left; margin:22px 0; width:100%">
+        <h2>Oh, There It Is! Plus</h2>
+        <p class="sub" style="margin-top:6px">&#8226; Unlimited saved things<br>&#8226; Every future Plus feature included<br>&#8226; One payment. No subscription. Ever.</p>
+      </div>
+      <button class="btn secondary" id="btn-buy-plus">UNLOCK UNLIMITED — $5.99</button>
+      <div id="plus-web" style="display:none; width:100%">
+        <a class="btn secondary" id="btn-buy-web" href="#" target="_blank" rel="noopener">BUY ON THE WEB — $5.99</a>
+        <button class="linkish" id="btn-have-key">I already have a license key</button>
+        <div id="key-wrap" style="display:none; margin-top:10px">
+          <input class="field" id="f-license" placeholder="Paste your license key" autocomplete="off">
+          <button class="btn primary" id="btn-activate-key" style="margin-top:10px">ACTIVATE</button>
+        </div>
+      </div>
+      <p class="sub" id="plus-note" style="display:none; margin-top:10px"></p>
+      <button class="linkish" id="btn-restore-plus">Already paid? Restore purchase</button>
+      <button class="linkish" data-go-home>Maybe later</button>
       <footer class="brand-footer" data-footer style="width:100%"></footer>
     </div>
   </section>
@@ -514,6 +552,12 @@
       <p class="sub" id="stat-sub">things saved on this device</p>
     </div>
 
+    <div class="card" id="plus-card">
+      <h2><span class="ic" data-ic="star"></span> <span id="plus-card-title">Oh, There It Is! Plus</span></h2>
+      <p class="sub" id="plus-card-sub">Unlimited saved things. One payment, no subscription — $5.99.</p>
+      <button class="btn secondary" id="btn-plus-from-settings">GO PLUS — $5.99</button>
+    </div>
+
     <div class="card">
       <h2><span class="ic" data-ic="lock"></span> Private</h2>
       <p class="sub">Your things are saved privately on this device. Nothing is sent anywhere.</p>
@@ -535,7 +579,7 @@
     </div>
 
     <footer class="brand-footer" data-footer></footer>
-    <p class="foot-note">Version 1.5 · <a href="privacy.html" style="color:inherit">Privacy</a></p>
+    <p class="foot-note">Version 1.6 · <a href="privacy.html" style="color:inherit">Privacy</a></p>
   </section>
 
 </main>
@@ -704,6 +748,107 @@ async function dbClear(){
   });
 }
 
+/* ---------- Plus (paid unlock) ---------- */
+const FREE_LIMIT = 40;
+const PLUS_SKU = "plus_lifetime";
+const PLAY_URL = "https://play.google.com/store/apps/details?id=io.github.kimberlyschultz1968.ohthereitis";
+/* Lemon Squeezy web checkout — filled in once the store account exists */
+const LS_STORE_URL = "";
+const LS_PRODUCT_ID = 0;
+let plus = localStorage.getItem("otii-plus") === "1";
+function setPlus(v){
+  plus = v;
+  if (v) localStorage.setItem("otii-plus", "1"); else localStorage.removeItem("otii-plus");
+  renderMeter();
+}
+async function playBilling(){
+  if (!("getDigitalGoodsService" in window)) return null;
+  try { return await window.getDigitalGoodsService("https://play.google.com/billing"); } catch { return null; }
+}
+async function buyPlus(){
+  const svc = await playBilling();
+  if (!svc){
+    const note = $("#plus-note");
+    note.style.display = "";
+    note.textContent = "Purchases happen in the Android app from Google Play.";
+    return;
+  }
+  try {
+    const req = new PaymentRequest([{ supportedMethods: "https://play.google.com/billing", data: { sku: PLUS_SKU } }]);
+    const resp = await req.show();
+    await resp.complete("success");
+    setPlus(true);
+    toast("Plus unlocked — thank you!");
+    renderSettings();
+    go("home");
+  } catch (e) {
+    toast("No worries — nothing was charged.");
+  }
+}
+async function restorePlus(showFeedback){
+  const svc = await playBilling();
+  if (!svc){ if (showFeedback) toast("Restore works in the Android app."); return; }
+  try {
+    const purchases = await svc.listPurchases();
+    if (purchases && purchases.some(p => p.itemId === PLUS_SKU)){
+      setPlus(true);
+      if (showFeedback){ toast("Plus restored!"); go("home"); }
+    } else if (showFeedback) toast("No previous purchase found.");
+  } catch { if (showFeedback) toast("Couldn't check purchases right now."); }
+}
+function renderMeter(){
+  const m = $("#meter");
+  if (!m) return;
+  if (plus){ m.style.display = "none"; return; }
+  m.style.display = "";
+  const n = items.length;
+  $("#meter-text").textContent = n + " of " + FREE_LIMIT + " free spots";
+  const fill = $("#meter-fill");
+  fill.style.width = Math.min(100, Math.round(n / FREE_LIMIT * 100)) + "%";
+  fill.classList.toggle("warn", n >= FREE_LIMIT - 5);
+}
+function renderPlusScreen(){
+  $("#plus-title").textContent = (!plus && items.length >= FREE_LIMIT)
+    ? "You've filled your free " + FREE_LIMIT + "!"
+    : "Go Plus";
+  applyPlusPurchaseUI();
+}
+async function applyPlusPurchaseUI(){
+  const svc = await playBilling();
+  if (svc){
+    $("#btn-buy-plus").style.display = "";
+    $("#plus-web").style.display = "none";
+  } else if (LS_STORE_URL){
+    $("#btn-buy-plus").style.display = "none";
+    $("#plus-web").style.display = "";
+    $("#btn-buy-web").href = LS_STORE_URL;
+  }
+}
+async function activateKey(){
+  const key = $("#f-license").value.trim();
+  if (!key){ $("#f-license").focus(); return; }
+  try {
+    const resp = await fetch("https://api.lemonsqueezy.com/v1/licenses/activate", {
+      method: "POST",
+      headers: { "Accept": "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify({ license_key: key, instance_name: "otii-" + Math.random().toString(36).slice(2, 8) })
+    });
+    const data = await resp.json();
+    const meta = data.meta || {};
+    if ((data.activated || data.valid) && (!LS_PRODUCT_ID || meta.product_id === LS_PRODUCT_ID)){
+      localStorage.setItem("otii-license", key);
+      setPlus(true);
+      toast("Plus unlocked — thank you!");
+      renderSettings();
+      go("home");
+    } else {
+      toast(data.error || "That key didn't work — check for typos.");
+    }
+  } catch {
+    toast("Couldn't reach the license server. Try again in a minute.");
+  }
+}
+
 /* ---------- State ---------- */
 let items = [];
 let editingId = null;
@@ -748,6 +893,7 @@ function activeItems(){ return items.filter(it => !it.archived); }
 function renderHome(){
   const h = new Date().getHours();
   $("#greeting").textContent = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+  renderMeter();
   const recent = activeItems().sort((a,b) => b.createdAt - a.createdAt).slice(0,4);
   $("#recent-list").innerHTML = recent.length
     ? recent.map(it => itemRowHTML(it)).join("")
@@ -816,7 +962,13 @@ function renderSettings(){
   const act = activeItems().length;
   const arch = items.length - act;
   $("#stat-count").textContent = act;
-  $("#stat-sub").textContent = (act === 1 ? "thing" : "things") + " saved on this device" + (arch ? " · " + arch + " archived" : "");
+  $("#stat-sub").textContent = (act === 1 ? "thing" : "things") + " saved on this device" + (arch ? " · " + arch + " archived" : "")
+    + (plus ? "" : " · " + items.length + " of " + FREE_LIMIT + " free");
+  if (plus){
+    $("#plus-card-title").textContent = "Plus — unlocked";
+    $("#plus-card-sub").textContent = "Unlimited saved things. Thank you for supporting the app!";
+    $("#btn-plus-from-settings").style.display = "none";
+  }
   const eraseBtn = $("#btn-erase");
   eraseBtn.textContent = "Erase everything";
   eraseBtn.classList.remove("armed");
@@ -887,6 +1039,7 @@ function buildChips(){
 }
 
 function openAdd(edit){
+  if (!edit && !plus && items.length >= FREE_LIMIT){ renderPlusScreen(); go("plus"); return; }
   editingId = edit ? edit.id : null;
   pendingPhoto = edit ? edit.photo : null;
   selLoc = null; selCat = null;
@@ -964,6 +1117,7 @@ async function onPhotoPicked(e){
 }
 
 async function saveItem(){
+  if (!editingId && !plus && items.length >= FREE_LIMIT){ renderPlusScreen(); go("plus"); return; }
   const name = $("#f-name").value.trim();
   let location = selLoc;
   if (location === "Somewhere else") location = $("#loc-custom").value.trim();
@@ -1135,6 +1289,11 @@ $("#btn-edit-move").addEventListener("click", () => { if (matches[matchIdx]) ope
 
 $("#btn-add-another").addEventListener("click", () => openAdd());
 $("#btn-saved-done").addEventListener("click", () => go("home"));
+$("#btn-buy-plus").addEventListener("click", buyPlus);
+$("#btn-restore-plus").addEventListener("click", () => restorePlus(true));
+$("#btn-have-key").addEventListener("click", () => { $("#key-wrap").style.display = ""; $("#f-license").focus(); });
+$("#btn-activate-key").addEventListener("click", activateKey);
+$("#btn-plus-from-settings").addEventListener("click", () => { renderPlusScreen(); go("plus"); });
 
 $("#photo-camera").addEventListener("change", onPhotoPicked);
 $("#photo-library").addEventListener("change", onPhotoPicked);
@@ -1212,6 +1371,8 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catc
 dbAll().then(all => {
   items = all;
   go("welcome");
+  renderMeter();
+  if (!plus) restorePlus(false);
 }).catch(() => {
   toast("Storage isn't available in this browser.");
   renderHome();
