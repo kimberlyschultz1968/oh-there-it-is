@@ -758,9 +758,9 @@ async function dbClear(){
 const FREE_LIMIT = 40;
 const PLUS_SKU = "plus_lifetime";
 const PLAY_URL = "https://play.google.com/store/apps/details?id=io.github.kimberlyschultz1968.ohthereitis";
-/* Lemon Squeezy web checkout — filled in once the store account exists */
-const LS_STORE_URL = "";
-const LS_PRODUCT_ID = 0;
+/* Web checkout: Stripe via the shared family API */
+const API_URL = "https://the-binder-api.onrender.com";
+const BUY_URL = API_URL + "/otii/checkout";
 let plus = localStorage.getItem("otii-plus") === "1";
 function setPlus(v){
   plus = v;
@@ -821,36 +821,51 @@ function renderPlusScreen(){
 }
 async function applyPlusPurchaseUI(){
   const svc = await playBilling();
-  const webReady = !!LS_STORE_URL;
   // Google Play button only inside the Play app; web checkout button everywhere else
-  $("#btn-buy-plus").style.display = svc ? "" : (webReady ? "none" : "");
-  $("#plus-web").style.display = (svc || webReady) ? "" : "none";
-  $("#btn-buy-web").style.display = (!svc && webReady) ? "" : "none";
-  if (webReady) $("#btn-buy-web").href = LS_STORE_URL;
+  $("#btn-buy-plus").style.display = svc ? "" : "none";
+  $("#plus-web").style.display = "";
+  $("#btn-buy-web").style.display = svc ? "none" : "";
+  $("#btn-buy-web").href = BUY_URL;
 }
 async function activateKey(){
   const key = $("#f-license").value.trim();
   if (!key){ $("#f-license").focus(); return; }
   try {
-    const resp = await fetch("https://api.lemonsqueezy.com/v1/licenses/activate", {
+    const resp = await fetch(API_URL + "/otii/activate", {
       method: "POST",
-      headers: { "Accept": "application/json", "Content-Type": "application/json" },
-      body: JSON.stringify({ license_key: key, instance_name: "otii-" + Math.random().toString(36).slice(2, 8) })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key })
     });
     const data = await resp.json();
-    const meta = data.meta || {};
-    if ((data.activated || data.valid) && (!LS_PRODUCT_ID || meta.product_id === LS_PRODUCT_ID)){
-      localStorage.setItem("otii-license", key);
+    if (data.valid){
+      localStorage.setItem("otii-license", key.toUpperCase());
       setPlus(true);
       toast("Plus unlocked — thank you!");
       renderSettings();
       go("home");
     } else {
-      toast(data.error || "That key didn't work — check for typos.");
+      toast("That key didn't work — check for typos.");
     }
   } catch {
     toast("Couldn't reach the license server. Try again in a minute.");
   }
+}
+async function claimFromCheckout(){
+  const qs = new URLSearchParams(location.search);
+  const sid = qs.get("session_id");
+  if (qs.get("canceled")) history.replaceState(null, "", location.pathname);
+  if (!sid) return;
+  history.replaceState(null, "", location.pathname);
+  try {
+    const resp = await fetch(API_URL + "/otii/claim?session_id=" + encodeURIComponent(sid));
+    const data = await resp.json();
+    if (data.key){
+      localStorage.setItem("otii-license", data.key);
+      setPlus(true);
+      renderSettings();
+      toast("Plus unlocked — your key is saved in Settings");
+    }
+  } catch {}
 }
 
 /* ---------- State ---------- */
@@ -969,8 +984,10 @@ function renderSettings(){
   $("#stat-sub").textContent = (act === 1 ? "thing" : "things") + " saved on this device" + (arch ? " · " + arch + " archived" : "")
     + (plus ? "" : " · " + items.length + " of " + FREE_LIMIT + " free");
   if (plus){
+    const lic = localStorage.getItem("otii-license");
     $("#plus-card-title").textContent = "Plus — unlocked";
-    $("#plus-card-sub").textContent = "Unlimited saved things. Thank you for supporting the app!";
+    $("#plus-card-sub").textContent = "Unlimited saved things. Thank you for supporting the app!"
+      + (lic ? " Your license key (works on any device): " + lic : "");
     $("#btn-plus-from-settings").style.display = "none";
   }
   const eraseBtn = $("#btn-erase");
@@ -1372,10 +1389,12 @@ $$("[data-ic]").forEach(el => { el.innerHTML = icon(el.dataset.ic); });
 if (!SR) $$(".mic-btn").forEach(b => b.style.display = "none");
 buildChips();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+fetch(API_URL + "/").catch(() => {}); // wake the checkout server early
 dbAll().then(all => {
   items = all;
   go("welcome");
   renderMeter();
+  claimFromCheckout();
   if (!plus) restorePlus(false);
 }).catch(() => {
   toast("Storage isn't available in this browser.");
