@@ -815,14 +815,12 @@ function renderPlusScreen(){
 }
 async function applyPlusPurchaseUI(){
   const svc = await playBilling();
-  if (svc){
-    $("#btn-buy-plus").style.display = "";
-    $("#plus-web").style.display = "none";
-  } else if (LS_STORE_URL){
-    $("#btn-buy-plus").style.display = "none";
-    $("#plus-web").style.display = "";
-    $("#btn-buy-web").href = LS_STORE_URL;
-  }
+  const webReady = !!LS_STORE_URL;
+  // Google Play button only inside the Play app; web checkout button everywhere else
+  $("#btn-buy-plus").style.display = svc ? "" : (webReady ? "none" : "");
+  $("#plus-web").style.display = (svc || webReady) ? "" : "none";
+  $("#btn-buy-web").style.display = (!svc && webReady) ? "" : "none";
+  if (webReady) $("#btn-buy-web").href = LS_STORE_URL;
 }
 async function activateKey(){
   const key = $("#f-license").value.trim();
