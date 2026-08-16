@@ -192,7 +192,9 @@
   .pbtn.solid{background:var(--teal); color:var(--white)}
   .pbtn.frame{border:1.5px solid var(--mint); color:var(--teal-dark); background:var(--white)}
   #photo-preview-wrap{display:none}
-  #photo-preview{width:100%; height:200px; object-fit:cover; border-radius:14px}
+  #photo-preview, #photo2-preview{width:100%; height:200px; object-fit:cover; border-radius:14px}
+  .result-photo.second{height:140px; margin-top:8px}
+  .d-photo.second{height:150px; margin-top:8px}
 
   .field{width:100%; background:var(--white); border:1.5px solid var(--line); border-radius:12px;
     padding:13px 16px; font-size:16px; outline:none}
@@ -376,6 +378,7 @@
       <div class="lockup lockup-md" data-lockup></div>
       <div class="result-card">
         <div class="result-photo" id="result-photo"></div>
+        <div class="result-photo second" id="result-photo2" style="display:none"></div>
         <div class="result-name" id="result-name"></div>
         <div><span class="result-loc"><span class="ic" data-ic="pin"></span><span id="result-loc"></span></span></div>
         <p class="match-count" id="match-count"></p>
@@ -449,7 +452,7 @@
     </header>
 
     <div class="step" id="step-photo">
-      <div class="step-label"><span class="step-num">1</span> Take a photo <span class="optional">(optional)</span></div>
+      <div class="step-label"><span class="step-num">1</span> Take a close-up photo <span class="optional">(optional)</span></div>
       <div class="photo-zone" id="photo-zone">
         <div class="photo-btns">
           <label class="pbtn solid"><span class="ic" data-ic="camera"></span> Take a photo
@@ -463,6 +466,23 @@
       <div id="photo-preview-wrap">
         <img id="photo-preview" alt="Photo of this item">
         <button class="linkish" id="photo-remove" style="margin-top:8px">Remove photo</button>
+      </div>
+      <div id="photo2-block" style="display:none; margin-top:14px">
+        <p class="field-hint" style="margin:0 0 8px">Now step back and snap a wider shot — it shows the whole area. <span class="optional">(optional)</span></p>
+        <div class="photo-zone" id="photo2-zone">
+          <div class="photo-btns">
+            <label class="pbtn solid"><span class="ic" data-ic="camera"></span> Take a photo
+              <input type="file" accept="image/*" capture="environment" hidden id="photo2-camera">
+            </label>
+            <label class="pbtn frame"><span class="ic" data-ic="image"></span> Choose a photo
+              <input type="file" accept="image/*" hidden id="photo2-library">
+            </label>
+          </div>
+        </div>
+        <div id="photo2-preview-wrap" style="display:none">
+          <img id="photo2-preview" alt="Wider photo of where this item is">
+          <button class="linkish" id="photo2-remove" style="margin-top:8px">Remove photo</button>
+        </div>
       </div>
     </div>
 
@@ -604,6 +624,7 @@
 <div id="sheet" role="dialog" aria-modal="true" aria-label="Item details">
   <button class="sheet-close" id="sheet-close" aria-label="Close">✕</button>
   <div class="d-photo" id="d-photo"></div>
+  <div class="d-photo second" id="d-photo2" style="display:none"></div>
   <div class="d-name" id="d-name"></div>
   <div class="d-loc"><span class="ic" data-ic="pin"></span><span id="d-loc-text"></span></div>
   <div class="d-notes" id="d-notes"></div>
@@ -872,6 +893,7 @@ async function claimFromCheckout(){
 let items = [];
 let editingId = null;
 let pendingPhoto = null;
+let pendingPhoto2 = null;
 let matches = [];
 let matchIdx = 0;
 let groupMode = "location";
@@ -1045,6 +1067,9 @@ function showMatch(i){
   matchIdx = i;
   const it = matches[i];
   $("#result-photo").innerHTML = it.photo ? '<img src="' + it.photo + '" alt="">' : '<span class="ic">' + catIcon(it.category) + '</span>';
+  const rp2 = $("#result-photo2");
+  rp2.style.display = it.photo2 ? "" : "none";
+  rp2.innerHTML = it.photo2 ? '<img src="' + it.photo2 + '" alt="">' : "";
   $("#result-name").textContent = "Your " + it.name;
   $("#result-loc").textContent = it.location + (it.spot ? " · " + it.spot : "");
   $("#match-count").textContent = matches.length > 1 ? "Match " + (i+1) + " of " + matches.length : "";
@@ -1063,6 +1088,7 @@ function openAdd(edit){
   if (!edit && !plus && items.length >= FREE_LIMIT){ renderPlusScreen(); go("plus"); return; }
   editingId = edit ? edit.id : null;
   pendingPhoto = edit ? edit.photo : null;
+  pendingPhoto2 = edit ? (edit.photo2 || null) : null;
   selLoc = null; selCat = null;
   selImp = edit ? !!edit.important : false;
   $("#f-important").classList.toggle("on", selImp);
@@ -1101,6 +1127,11 @@ function updatePhotoPreview(){
   $("#photo-zone").style.display = has ? "none" : "";
   $("#photo-preview-wrap").style.display = has ? "block" : "none";
   if (has) $("#photo-preview").src = pendingPhoto;
+  const has2 = !!pendingPhoto2;
+  $("#photo2-block").style.display = (has || has2) ? "" : "none";
+  $("#photo2-zone").style.display = has2 ? "none" : "";
+  $("#photo2-preview-wrap").style.display = has2 ? "block" : "none";
+  if (has2) $("#photo2-preview").src = pendingPhoto2;
 }
 
 function compressPhoto(file){
@@ -1137,6 +1168,18 @@ async function onPhotoPicked(e){
   }
 }
 
+async function onPhoto2Picked(e){
+  const file = e.target.files && e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  try {
+    pendingPhoto2 = await compressPhoto(file);
+    updatePhotoPreview();
+  } catch {
+    toast("Sorry — that photo couldn't be read.");
+  }
+}
+
 async function saveItem(){
   if (!editingId && !plus && items.length >= FREE_LIMIT){ renderPlusScreen(); go("plus"); return; }
   const name = $("#f-name").value.trim();
@@ -1159,6 +1202,7 @@ async function saveItem(){
     important: selImp,
     archived: existing ? !!existing.archived : false,
     photo: pendingPhoto,
+    photo2: pendingPhoto2,
     createdAt: existing ? existing.createdAt : Date.now()
   };
   await dbPut(item);
@@ -1181,6 +1225,9 @@ function openDetail(id){
   if (!it) return;
   detailId = id;
   $("#d-photo").innerHTML = it.photo ? '<img src="' + it.photo + '" alt="">' : '<span class="ic">' + catIcon(it.category) + '</span>';
+  const dp2 = $("#d-photo2");
+  dp2.style.display = it.photo2 ? "" : "none";
+  dp2.innerHTML = it.photo2 ? '<img src="' + it.photo2 + '" alt="">' : "";
   $("#d-name").innerHTML = (it.important ? '<span class="ic">' + I.starFill + '</span>' : "") + esc(it.name);
   $("#d-loc-text").textContent = it.location + (it.spot ? " · " + it.spot : "");
   $("#d-notes").textContent = it.notes || "";
@@ -1319,6 +1366,9 @@ $("#btn-plus-from-settings").addEventListener("click", () => { renderPlusScreen(
 $("#photo-camera").addEventListener("change", onPhotoPicked);
 $("#photo-library").addEventListener("change", onPhotoPicked);
 $("#photo-remove").addEventListener("click", () => { pendingPhoto = null; updatePhotoPreview(); });
+$("#photo2-camera").addEventListener("change", onPhoto2Picked);
+$("#photo2-library").addEventListener("change", onPhoto2Picked);
+$("#photo2-remove").addEventListener("click", () => { pendingPhoto2 = null; updatePhotoPreview(); });
 $("#btn-save").addEventListener("click", saveItem);
 $("#f-name").addEventListener("input", () => $("#step-name").classList.remove("invalid"));
 $("#f-important").addEventListener("click", e => { selImp = !selImp; e.currentTarget.classList.toggle("on", selImp); });

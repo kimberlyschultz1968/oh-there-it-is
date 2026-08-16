@@ -1,5 +1,5 @@
 /* Oh, There It Is! — service worker: offline support for the app shell */
-const CACHE = "otii-v1";
+const CACHE = "otii-v2";
 const ASSETS = [
   "./",
   "index.html",
