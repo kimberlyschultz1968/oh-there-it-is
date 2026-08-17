@@ -1440,6 +1440,15 @@ if (!SR) $$(".mic-btn").forEach(b => b.style.display = "none");
 buildChips();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 fetch(API_URL + "/").catch(() => {}); // wake the checkout server early
+// anonymous daily usage ping — one count per device per day, no personal data
+try {
+  let pid = localStorage.getItem("otii.pid");
+  if (!pid) { pid = "p" + Math.random().toString(36).slice(2, 12) + Date.now().toString(36); localStorage.setItem("otii.pid", pid); }
+  const psrc = new URLSearchParams(location.search).get("src");
+  if (psrc) localStorage.setItem("otii.src", psrc.slice(0, 60));
+  fetch(API_URL + "/otii/ping", { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id: pid, source: localStorage.getItem("otii.src") || "" }) }).catch(() => {});
+} catch (e) {}
 dbAll().then(all => {
   items = all;
   go("welcome");
