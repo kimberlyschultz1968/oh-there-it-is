@@ -83,6 +83,16 @@
   .feat b{display:block; font-size:15px}
   .feat span{color:var(--muted); font-size:13.5px}
   .welcome-note{color:var(--faint); font-size:12.5px; margin-top:14px}
+  .welcome-optin{width:100%; background:var(--white); border-radius:16px; padding:16px; margin-top:22px;
+    box-shadow:var(--shadow); text-align:left}
+  .welcome-optin .sub{font-size:13.5px}
+  .welcome-optin .field{margin-top:10px}
+  .wl-consent{display:flex; align-items:flex-start; gap:9px; margin:10px 0 2px; font-size:12.5px;
+    line-height:1.45; color:var(--muted); cursor:pointer}
+  .wl-consent input{margin-top:2px; flex:none; width:16px; height:16px}
+  .wl-msg{font-size:13px; font-weight:700; margin-top:8px; min-height:1.2em}
+  .wl-msg.bad{color:var(--danger)}
+  .wl-msg.good{color:var(--teal-dark)}
 
   /* ---- Home ---- */
   .home-head{margin:6px 0 16px}
@@ -315,6 +325,20 @@
       </div>
       <button class="btn primary" id="btn-get-started">GET STARTED</button>
       <p class="welcome-note">Free · Private — your things stay on your own device</p>
+
+      <div class="welcome-optin" id="welcome-optin">
+        <b>Want occasional tips?</b>
+        <p class="sub" style="margin-top:4px">Leave your email for organizing tips and news about the app —
+        totally optional, never required to use it.</p>
+        <input class="field" id="wl-email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com">
+        <label class="wl-consent">
+          <input type="checkbox" id="wl-consent">
+          <span>Yes, email me occasional tips. I can unsubscribe any time.</span>
+        </label>
+        <button class="btn frame" id="wl-optin-btn" type="button" style="width:100%; margin-top:8px">SEND ME TIPS</button>
+        <p class="wl-msg" id="wl-msg" role="status"></p>
+      </div>
+
       <footer class="brand-footer" data-footer style="width:100%"></footer>
     </div>
   </section>
@@ -1449,6 +1473,30 @@ try {
   fetch(API_URL + "/otii/ping", { method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id: pid, source: localStorage.getItem("otii.src") || "" }) }).catch(() => {});
 } catch (e) {}
+
+/* Welcome-screen opt-in. The checkbox is the permission record — this refuses to
+   send without it rather than quietly opting anyone in. Tagged with the same
+   source that credits the anonymous usage ping above, so campaigns can be compared. */
+$("#wl-optin-btn").addEventListener("click", () => {
+  const email = $("#wl-email").value.trim();
+  const consent = $("#wl-consent").checked;
+  const m = $("#wl-msg");
+  m.className = "wl-msg";
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { m.className = "wl-msg bad"; m.textContent = "Please enter a valid email address."; return; }
+  if (!consent) { m.className = "wl-msg bad"; m.textContent = "Please tick the box so we know it's OK to email you."; return; }
+  const btn = $("#wl-optin-btn");
+  btn.disabled = true; m.textContent = "Sending…";
+  fetch(API_URL + "/otii/lead", { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, source: localStorage.getItem("otii.src") || "", consent: true }) })
+    .then(r => r.json().catch(() => ({})).then(d => {
+      if (!r.ok) throw new Error(d.error || "Something went wrong — please try again.");
+      m.className = "wl-msg good";
+      m.textContent = "Thanks — you're on the list. You can unsubscribe any time.";
+      $("#wl-email").disabled = true;
+      $("#wl-consent").disabled = true;
+    }))
+    .catch(e => { btn.disabled = false; m.className = "wl-msg bad"; m.textContent = e.message; });
+});
 dbAll().then(all => {
   items = all;
   go("welcome");
