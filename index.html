@@ -446,9 +446,9 @@
     <div class="saved-wrap">
       <div class="lockup lockup-md page-logo" data-lockup aria-hidden="true"></div>
       <h1 id="plus-title">Go Plus</h1>
-      <p class="sub" style="margin-top:8px">That means the app is earning its keep. Unlock unlimited — once, forever.</p>
-      <div class="card" style="text-align:left; margin:22px 0; width:100%">
-        <h2>Oh, There It Is! Plus</h2>
+      <p class="sub" style="margin-top:8px">That means the app is earning its keep. Unlock unlimited, your way.</p>
+      <div class="card" style="text-align:left; margin:22px 0 12px; width:100%">
+        <h2>Pay Once</h2>
         <p class="sub" style="margin-top:6px">&#8226; Unlimited saved things<br>&#8226; Every future Plus feature included<br>&#8226; One payment. No subscription. Ever.</p>
       </div>
       <button class="btn secondary" id="btn-buy-plus">UNLOCK UNLIMITED — $5.99</button>
@@ -460,8 +460,20 @@
           <button class="btn primary" id="btn-activate-key" style="margin-top:10px">ACTIVATE</button>
         </div>
       </div>
+
+      <div class="card" style="text-align:left; margin:18px 0 12px; width:100%">
+        <h2>Or Subscribe</h2>
+        <p class="sub" style="margin-top:6px">&#8226; Same unlimited saved things<br>&#8226; Pay monthly instead of all at once<br>&#8226; Cancel any time</p>
+      </div>
+      <a class="btn frame" id="btn-subscribe-web" href="#" target="_blank" rel="noopener" style="width:100%">SUBSCRIBE — $3.99/MO</a>
+
       <p class="sub" id="plus-note" style="display:none; margin-top:10px"></p>
-      <button class="linkish" id="btn-restore-plus">Already paid? Restore purchase</button>
+      <button class="linkish" id="btn-restore-plus">Already paid once? Restore purchase</button>
+      <button class="linkish" id="btn-restore-sub">Already subscribed? Restore by email</button>
+      <div id="sub-restore-wrap" style="display:none; margin-top:10px; width:100%">
+        <input class="field" id="f-sub-email" type="email" inputmode="email" autocomplete="email" placeholder="Email you subscribed with">
+        <button class="btn primary" id="btn-check-sub" style="margin-top:10px">CHECK</button>
+      </div>
       <button class="linkish" data-go-home>Maybe later</button>
       <footer class="brand-footer" data-footer style="width:100%"></footer>
     </div>
@@ -606,6 +618,7 @@
       <h2><span class="ic" data-ic="star"></span> <span id="plus-card-title">Oh, There It Is! Plus</span></h2>
       <p class="sub" id="plus-card-sub">Unlimited saved things. One payment, no subscription — $5.99.</p>
       <button class="btn secondary" id="btn-plus-from-settings">GO PLUS — $5.99</button>
+      <button class="btn frame" id="btn-manage-sub" style="display:none; margin-top:10px">MANAGE SUBSCRIPTION</button>
     </div>
 
     <div class="card">
@@ -806,11 +819,60 @@ const PLAY_URL = "https://play.google.com/store/apps/details?id=io.github.kimber
 /* Web checkout: Stripe via the shared family API */
 const API_URL = "https://the-binder-api.onrender.com";
 const BUY_URL = API_URL + "/otii/checkout";
+const SUBSCRIBE_URL = API_URL + "/otii/subscribe";
 let plus = localStorage.getItem("otii-plus") === "1";
+// "lifetime" (the $5.99 one-time key) or "subscription" ($3.99/mo, tracked by
+// email since there's no login) - only subscriptions ever need re-checking,
+// since a lifetime purchase can't lapse.
+let plusKind = localStorage.getItem("otii-plus-kind") || null;
+let subEmail = localStorage.getItem("otii-sub-email") || "";
 function setPlus(v){
+  // every existing caller of this is a one-time purchase path (Play Billing,
+  // license key, web Stripe one-time claim) - subscriptions go through
+  // setPlusSubscription() instead, which is the only thing that ever writes
+  // "subscription" as the kind.
   plus = v;
-  if (v) localStorage.setItem("otii-plus", "1"); else localStorage.removeItem("otii-plus");
+  if (v){
+    localStorage.setItem("otii-plus", "1");
+    plusKind = "lifetime";
+    localStorage.setItem("otii-plus-kind", "lifetime");
+  } else {
+    localStorage.removeItem("otii-plus");
+  }
   renderMeter();
+}
+function setPlusSubscription(active, email){
+  plus = active;
+  plusKind = active ? "subscription" : plusKind;
+  if (active){
+    localStorage.setItem("otii-plus", "1");
+    localStorage.setItem("otii-plus-kind", "subscription");
+    subEmail = email;
+    localStorage.setItem("otii-sub-email", email);
+  } else if (plusKind === "subscription") {
+    // her subscription lapsed - a lifetime purchase (if she also had one) would
+    // have its own "lifetime" kind and never reach this branch
+    localStorage.removeItem("otii-plus");
+    localStorage.removeItem("otii-plus-kind");
+    plusKind = null;
+  }
+  renderMeter();
+}
+// Re-checks an active subscription against the server - called once on launch
+// (a subscription can lapse, unlike the one-time key) and from the "restore on
+// a new device" flow, where showFeedback also drives the toast + navigation.
+async function checkSubscription(email, showFeedback){
+  try {
+    const resp = await fetch(API_URL + "/otii/subscription-status?email=" + encodeURIComponent(email));
+    const data = await resp.json();
+    setPlusSubscription(!!data.active, email);
+    if (showFeedback){
+      if (data.active){ toast("Subscription restored!"); renderSettings(); go("home"); }
+      else toast("No active subscription found for that email.");
+    }
+  } catch {
+    if (showFeedback) toast("Couldn't reach the server — try again in a minute.");
+  }
 }
 async function playBilling(){
   if (!("getDigitalGoodsService" in window)) return null;
@@ -871,6 +933,8 @@ async function applyPlusPurchaseUI(){
   $("#plus-web").style.display = "";
   $("#btn-buy-web").style.display = svc ? "none" : "";
   $("#btn-buy-web").href = BUY_URL;
+  // the $3.99/mo subscription only exists as a web/Stripe option for now
+  $("#btn-subscribe-web").href = SUBSCRIBE_URL;
 }
 async function activateKey(){
   const key = $("#f-license").value.trim();
@@ -898,9 +962,22 @@ async function activateKey(){
 async function claimFromCheckout(){
   const qs = new URLSearchParams(location.search);
   const sid = qs.get("session_id");
+  const subSid = qs.get("sub_session_id");
   if (qs.get("canceled")) history.replaceState(null, "", location.pathname);
-  if (!sid) return;
+  if (!sid && !subSid) return;
   history.replaceState(null, "", location.pathname);
+  if (subSid){
+    try {
+      const resp = await fetch(API_URL + "/otii/subscribe-claim?session_id=" + encodeURIComponent(subSid));
+      const data = await resp.json();
+      if (data.email){
+        setPlusSubscription(true, data.email);
+        renderSettings();
+        toast("Subscribed — thank you!");
+      }
+    } catch {}
+    return;
+  }
   try {
     const resp = await fetch(API_URL + "/otii/claim?session_id=" + encodeURIComponent(sid));
     const data = await resp.json();
@@ -1032,9 +1109,15 @@ function renderSettings(){
   if (plus){
     const lic = localStorage.getItem("otii-license");
     $("#plus-card-title").textContent = "Plus — unlocked";
-    $("#plus-card-sub").textContent = "Unlimited saved things. Thank you for supporting the app!"
-      + (lic ? " Your license key (works on any device): " + lic : "");
     $("#btn-plus-from-settings").style.display = "none";
+    if (plusKind === "subscription"){
+      $("#plus-card-sub").textContent = "Unlimited saved things. Subscribed at " + subEmail + " — $3.99/mo.";
+      $("#btn-manage-sub").style.display = "";
+    } else {
+      $("#plus-card-sub").textContent = "Unlimited saved things. Thank you for supporting the app!"
+        + (lic ? " Your license key (works on any device): " + lic : "");
+      $("#btn-manage-sub").style.display = "none";
+    }
   }
   const eraseBtn = $("#btn-erase");
   eraseBtn.textContent = "Erase everything";
@@ -1386,6 +1469,26 @@ $("#btn-restore-plus").addEventListener("click", () => restorePlus(true));
 $("#btn-have-key").addEventListener("click", () => { $("#key-wrap").style.display = ""; $("#f-license").focus(); });
 $("#btn-activate-key").addEventListener("click", activateKey);
 $("#btn-plus-from-settings").addEventListener("click", () => { renderPlusScreen(); go("plus"); });
+$("#btn-restore-sub").addEventListener("click", () => { $("#sub-restore-wrap").style.display = ""; $("#f-sub-email").focus(); });
+$("#btn-check-sub").addEventListener("click", () => {
+  const email = $("#f-sub-email").value.trim().toLowerCase();
+  if (!email){ $("#f-sub-email").focus(); return; }
+  checkSubscription(email, true);
+});
+$("#btn-manage-sub").addEventListener("click", async () => {
+  try {
+    const resp = await fetch(API_URL + "/otii/subscription-portal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: subEmail })
+    });
+    const data = await resp.json();
+    if (data.url) window.location.href = data.url;
+    else toast(data.error || "Couldn't open billing — try again in a minute.");
+  } catch {
+    toast("Couldn't reach the server — try again in a minute.");
+  }
+});
 
 $("#photo-camera").addEventListener("change", onPhotoPicked);
 $("#photo-library").addEventListener("change", onPhotoPicked);
@@ -1503,6 +1606,9 @@ dbAll().then(all => {
   renderMeter();
   claimFromCheckout();
   if (!plus) restorePlus(false);
+  // a subscription (unlike the one-time key) can lapse - re-check quietly on
+  // every launch so a cancellation actually re-locks the app
+  if (plusKind === "subscription" && subEmail) checkSubscription(subEmail, false);
 }).catch(() => {
   toast("Storage isn't available in this browser.");
   renderHome();
