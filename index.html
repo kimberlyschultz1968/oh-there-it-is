@@ -742,7 +742,7 @@ const $$ = s => Array.from(document.querySelectorAll(s));
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 const LOCATIONS = ["Garage","Kitchen","Office","Bedroom","Living Room","Laundry","Basement","Attic","Closet","Storage","Outside","Somewhere else"];
-const CATEGORIES = ["Tools & Equipment","Electronics","Documents","Holiday","Keepsakes","Clothes","Kids","Other"];
+const CATEGORIES = ["Tools & Equipment","Electronics","Documents","Holiday","Keepsakes","Clothes","Kids","Garage & yard","Kitchen & entertaining","Sports & camping","Toys & games","Books & media","Craft & hobby","Jewelry & accessories","Medical & health","Pet stuff","Other"];
 
 function timeAgo(ts){
   const d = Date.now() - ts;
