@@ -447,33 +447,43 @@
       <div class="lockup lockup-md page-logo" data-lockup aria-hidden="true"></div>
       <h1 id="plus-title">Go Plus</h1>
       <p class="sub" style="margin-top:8px">That means the app is earning its keep. Unlock unlimited, your way.</p>
-      <div class="card" style="text-align:left; margin:22px 0 12px; width:100%">
+
+      <!-- Account: purchases are tied to this so Plus follows you to any device.
+           What you save stays on-device either way - this is just who's paying. -->
+      <div class="card" id="otii-acct-card" style="text-align:left; margin:22px 0 12px; width:100%">
+        <h2 id="otii-acct-title">Sign in first</h2>
+        <p class="sub" id="otii-acct-sub" style="margin-top:6px">A free account keeps Plus with you if you ever switch devices.</p>
+        <div id="otii-acct-form">
+          <input class="field" id="otii-e" type="email" inputmode="email" autocomplete="email" placeholder="Email" style="margin-top:10px">
+          <input class="field" id="otii-p" type="password" autocomplete="current-password" placeholder="Password (6+ characters)" style="margin-top:8px">
+          <div style="position:absolute;left:-9999px" aria-hidden="true"><input id="otii-w" type="text" tabindex="-1" autocomplete="off"></div>
+          <div class="sub" id="otii-acct-msg" style="margin-top:6px; min-height:1.2em"></div>
+          <button class="btn primary" id="otii-acct-submit" style="margin-top:8px">CREATE FREE ACCOUNT</button>
+          <button class="linkish" id="otii-acct-switch">Already have an account? Sign in</button>
+        </div>
+        <div id="otii-acct-signedin" style="display:none">
+          <p class="sub">Signed in as <b id="otii-acct-email"></b></p>
+          <button class="linkish" id="otii-acct-signout">Sign out</button>
+        </div>
+      </div>
+
+      <div class="card" style="text-align:left; margin:18px 0 12px; width:100%">
         <h2>Pay Once</h2>
         <p class="sub" style="margin-top:6px">&#8226; Unlimited saved things<br>&#8226; Every future Plus feature included<br>&#8226; One payment. No subscription. Ever.</p>
       </div>
       <button class="btn secondary" id="btn-buy-plus">UNLOCK UNLIMITED — $5.99</button>
       <div id="plus-web" style="display:none; width:100%">
-        <a class="btn secondary" id="btn-buy-web" href="#" target="_blank" rel="noopener">BUY ON THE WEB — $5.99</a>
-        <button class="linkish" id="btn-have-key">I already have a license key</button>
-        <div id="key-wrap" style="display:none; margin-top:10px">
-          <input class="field" id="f-license" placeholder="Paste your license key" autocomplete="off">
-          <button class="btn primary" id="btn-activate-key" style="margin-top:10px">ACTIVATE</button>
-        </div>
+        <button class="btn secondary" id="btn-buy-web">BUY ON THE WEB — $5.99</button>
       </div>
 
       <div class="card" style="text-align:left; margin:18px 0 12px; width:100%">
         <h2>Or Subscribe</h2>
         <p class="sub" style="margin-top:6px">&#8226; Same unlimited saved things<br>&#8226; Pay monthly instead of all at once<br>&#8226; Cancel any time</p>
       </div>
-      <a class="btn frame" id="btn-subscribe-web" href="#" target="_blank" rel="noopener" style="width:100%">SUBSCRIBE — $3.99/MO</a>
+      <button class="btn frame" id="btn-subscribe-web" style="width:100%">SUBSCRIBE — $3.99/MO</button>
 
       <p class="sub" id="plus-note" style="display:none; margin-top:10px"></p>
-      <button class="linkish" id="btn-restore-plus">Already paid once? Restore purchase</button>
-      <button class="linkish" id="btn-restore-sub">Already subscribed? Restore by email</button>
-      <div id="sub-restore-wrap" style="display:none; margin-top:10px; width:100%">
-        <input class="field" id="f-sub-email" type="email" inputmode="email" autocomplete="email" placeholder="Email you subscribed with">
-        <button class="btn primary" id="btn-check-sub" style="margin-top:10px">CHECK</button>
-      </div>
+      <button class="linkish" id="btn-restore-plus">Already paid on Google Play? Restore purchase</button>
       <button class="linkish" data-go-home>Maybe later</button>
       <footer class="brand-footer" data-footer style="width:100%"></footer>
     </div>
@@ -612,6 +622,13 @@
     <div class="card">
       <div class="stat-big" id="stat-count">0</div>
       <p class="sub" id="stat-sub">things saved on this device</p>
+    </div>
+
+    <div class="card" id="otii-settings-acct">
+      <h2>Account</h2>
+      <p class="sub" id="otii-settings-acct-sub">Not signed in — Plus purchases work best with a free account.</p>
+      <button class="btn frame" id="btn-settings-signin">SIGN IN OR CREATE ACCOUNT</button>
+      <button class="linkish" id="btn-settings-signout" style="display:none">Sign out</button>
     </div>
 
     <div class="card" id="plus-card">
@@ -816,81 +833,96 @@ async function dbClear(){
 const FREE_LIMIT = 40;
 const PLUS_SKU = "plus_lifetime";
 const PLAY_URL = "https://play.google.com/store/apps/details?id=io.github.kimberlyschultz1968.ohthereitis";
-/* Web checkout: Stripe via the shared family API */
+/* Web checkout + accounts: Stripe + login via the shared family API. Sep 2026:
+   moved from a stateless license key / email-only subscriber lookup to a real
+   account, same as every other Binder app - it's what lets Plus follow you to
+   a new device without copy-pasting a key. What you save stays on THIS device
+   either way; the account only carries your email/password and plan. */
 const API_URL = "https://the-binder-api.onrender.com";
-const BUY_URL = API_URL + "/otii/checkout";
-const SUBSCRIBE_URL = API_URL + "/otii/subscribe";
-let plus = localStorage.getItem("otii-plus") === "1";
-// "lifetime" (the $5.99 one-time key) or "subscription" ($3.99/mo, tracked by
-// email since there's no login) - only subscriptions ever need re-checking,
-// since a lifetime purchase can't lapse.
-let plusKind = localStorage.getItem("otii-plus-kind") || null;
-let subEmail = localStorage.getItem("otii-sub-email") || "";
-function setPlus(v){
-  // every existing caller of this is a one-time purchase path (Play Billing,
-  // license key, web Stripe one-time claim) - subscriptions go through
-  // setPlusSubscription() instead, which is the only thing that ever writes
-  // "subscription" as the kind.
-  plus = v;
-  if (v){
-    localStorage.setItem("otii-plus", "1");
-    plusKind = "lifetime";
-    localStorage.setItem("otii-plus-kind", "lifetime");
-  } else {
-    localStorage.removeItem("otii-plus");
-  }
-  renderMeter();
+let otiiToken = localStorage.getItem("otii.token") || null;
+let otiiEmail = localStorage.getItem("otii.email") || "";
+let plan = localStorage.getItem("otii.plan") || "free";
+let plus = plan !== "free";
+let otiiAuthMode = "signup";
+
+async function otiiApi(path, opts = {}){
+  const r = await fetch(API_URL + path, { ...opts,
+    headers: { "Content-Type": "application/json", ...(otiiToken ? { Authorization: "Bearer " + otiiToken } : {}), ...(opts.headers || {}) } });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || "Something went wrong");
+  return d;
 }
-function setPlusSubscription(active, email){
-  plus = active;
-  plusKind = active ? "subscription" : plusKind;
-  if (active){
-    localStorage.setItem("otii-plus", "1");
-    localStorage.setItem("otii-plus-kind", "subscription");
-    subEmail = email;
-    localStorage.setItem("otii-sub-email", email);
-  } else if (plusKind === "subscription") {
-    // her subscription lapsed - a lifetime purchase (if she also had one) would
-    // have its own "lifetime" kind and never reach this branch
-    localStorage.removeItem("otii-plus");
-    localStorage.removeItem("otii-plus-kind");
-    plusKind = null;
-  }
-  renderMeter();
+function setOtiiSession(token, email, newPlan){
+  otiiToken = token; otiiEmail = email; plan = newPlan || "free"; plus = plan !== "free";
+  localStorage.setItem("otii.token", token);
+  localStorage.setItem("otii.email", email);
+  localStorage.setItem("otii.plan", plan);
+  renderMeter(); renderOtiiAccountUI(); renderSettings();
 }
-// Re-checks an active subscription against the server - called once on launch
-// (a subscription can lapse, unlike the one-time key) and from the "restore on
-// a new device" flow, where showFeedback also drives the toast + navigation.
-async function checkSubscription(email, showFeedback){
+function otiiSignOut(){
+  otiiToken = null; otiiEmail = ""; plan = "free"; plus = false;
+  localStorage.removeItem("otii.token"); localStorage.removeItem("otii.email"); localStorage.removeItem("otii.plan");
+  renderMeter(); renderOtiiAccountUI(); renderSettings();
+}
+// Re-checks the account's plan against the server - called once on launch (a
+// subscription can lapse, unlike the one-time purchase) and right after
+// returning from Stripe checkout.
+async function refreshOtiiAccount(){
+  if (!otiiToken) return;
   try {
-    const resp = await fetch(API_URL + "/otii/subscription-status?email=" + encodeURIComponent(email));
-    const data = await resp.json();
-    setPlusSubscription(!!data.active, email);
-    if (showFeedback){
-      if (data.active){ toast("Subscription restored!"); renderSettings(); go("home"); }
-      else toast("No active subscription found for that email.");
-    }
-  } catch {
-    if (showFeedback) toast("Couldn't reach the server — try again in a minute.");
+    const me = await otiiApi("/otii/me");
+    plan = me.plan || "free"; plus = plan !== "free";
+    localStorage.setItem("otii.plan", plan);
+    renderMeter(); renderOtiiAccountUI(); renderSettings();
+  } catch { otiiSignOut(); } // token expired/invalid - same as every other app's session handling
+}
+async function doOtiiAuth(){
+  const e = $("#otii-e").value.trim(), p = $("#otii-p").value;
+  const msg = $("#otii-acct-msg"); msg.textContent = "";
+  if (!e || !p){ msg.textContent = "Enter an email and password."; return; }
+  const website = ($("#otii-w") || {}).value || "";
+  try {
+    const d = await otiiApi("/otii/auth/" + otiiAuthMode, { method: "POST",
+      body: JSON.stringify({ email: e, password: p, website, source: (localStorage.getItem("otii.src") || "") }) });
+    setOtiiSession(d.token, d.email, d.plan);
+    $("#otii-e").value = ""; $("#otii-p").value = "";
+    toast(otiiAuthMode === "signup" ? "Account created" : "Signed in");
+  } catch (err) { msg.textContent = err.message; }
+}
+function renderOtiiAccountUI(){
+  const signedIn = !!otiiToken;
+  const form = $("#otii-acct-form"), signedInBlock = $("#otii-acct-signedin");
+  if (form) form.style.display = signedIn ? "none" : "";
+  if (signedInBlock) signedInBlock.style.display = signedIn ? "" : "none";
+  if (signedIn){
+    $("#otii-acct-email").textContent = otiiEmail;
+    $("#otii-acct-title").textContent = plus ? "Plus account" : "Free account";
+    $("#otii-acct-sub").textContent = plus ? "Purchases are tied to this account." : "Upgrade below whenever you're ready.";
+  } else {
+    $("#otii-acct-title").textContent = "Sign in first";
+    $("#otii-acct-sub").textContent = "A free account keeps Plus with you if you ever switch devices.";
   }
+  const settingsSub = $("#otii-settings-acct-sub");
+  if (settingsSub) settingsSub.textContent = signedIn ? "Signed in as " + otiiEmail : "Not signed in — Plus purchases work best with a free account.";
+  const inBtn = $("#btn-settings-signin"), outBtn = $("#btn-settings-signout");
+  if (inBtn) inBtn.style.display = signedIn ? "none" : "";
+  if (outBtn) outBtn.style.display = signedIn ? "" : "none";
 }
 async function playBilling(){
   if (!("getDigitalGoodsService" in window)) return null;
   try { return await window.getDigitalGoodsService("https://play.google.com/billing"); } catch { return null; }
 }
+// Google Play Billing path only - entirely separate from the web/account
+// system above, since Play manages its own purchases and Google doesn't hand
+// receipts to this server. Unaffected by signing in/out on the web.
 async function buyPlus(){
   const svc = await playBilling();
-  if (!svc){
-    const note = $("#plus-note");
-    note.style.display = "";
-    note.textContent = "Purchases happen in the Android app from Google Play.";
-    return;
-  }
+  if (!svc) return; // the web button (#btn-buy-web) is the option outside the Play app
   try {
     const req = new PaymentRequest([{ supportedMethods: "https://play.google.com/billing", data: { sku: PLUS_SKU } }]);
     const resp = await req.show();
     await resp.complete("success");
-    setPlus(true);
+    plan = "plus"; plus = true; renderMeter();
     toast("Plus unlocked — thank you!");
     renderSettings();
     go("home");
@@ -904,7 +936,7 @@ async function restorePlus(showFeedback){
   try {
     const purchases = await svc.listPurchases();
     if (purchases && purchases.some(p => p.itemId === PLUS_SKU)){
-      setPlus(true);
+      plan = "plus"; plus = true; renderMeter();
       if (showFeedback){ toast("Plus restored!"); go("home"); }
     } else if (showFeedback) toast("No previous purchase found.");
   } catch { if (showFeedback) toast("Couldn't check purchases right now."); }
@@ -924,70 +956,38 @@ function renderPlusScreen(){
   $("#plus-title").textContent = (!plus && items.length >= FREE_LIMIT)
     ? "You've filled your free " + FREE_LIMIT + "!"
     : "Go Plus";
+  renderOtiiAccountUI();
   applyPlusPurchaseUI();
 }
 async function applyPlusPurchaseUI(){
   const svc = await playBilling();
   // Google Play button only inside the Play app; web checkout button everywhere else
   $("#btn-buy-plus").style.display = svc ? "" : "none";
-  $("#plus-web").style.display = "";
-  $("#btn-buy-web").style.display = svc ? "none" : "";
-  $("#btn-buy-web").href = BUY_URL;
-  // the $3.99/mo subscription only exists as a web/Stripe option for now
-  $("#btn-subscribe-web").href = SUBSCRIBE_URL;
+  $("#plus-web").style.display = svc ? "none" : "";
 }
-async function activateKey(){
-  const key = $("#f-license").value.trim();
-  if (!key){ $("#f-license").focus(); return; }
-  try {
-    const resp = await fetch(API_URL + "/otii/activate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ key })
-    });
-    const data = await resp.json();
-    if (data.valid){
-      localStorage.setItem("otii-license", key.toUpperCase());
-      setPlus(true);
-      toast("Plus unlocked — thank you!");
-      renderSettings();
-      go("home");
-    } else {
-      toast("That key didn't work — check for typos.");
-    }
-  } catch {
-    toast("Couldn't reach the license server. Try again in a minute.");
-  }
-}
-async function claimFromCheckout(){
-  const qs = new URLSearchParams(location.search);
-  const sid = qs.get("session_id");
-  const subSid = qs.get("sub_session_id");
-  if (qs.get("canceled")) history.replaceState(null, "", location.pathname);
-  if (!sid && !subSid) return;
-  history.replaceState(null, "", location.pathname);
-  if (subSid){
-    try {
-      const resp = await fetch(API_URL + "/otii/subscribe-claim?session_id=" + encodeURIComponent(subSid));
-      const data = await resp.json();
-      if (data.email){
-        setPlusSubscription(true, data.email);
-        renderSettings();
-        toast("Subscribed — thank you!");
-      }
-    } catch {}
+// Both web purchase buttons need to be signed in first (that's who the
+// purchase attaches to) - if not, send them to the account card instead of
+// straight to Stripe.
+async function startOtiiCheckout(path){
+  if (!otiiToken){
+    const note = $("#plus-note");
+    note.style.display = ""; note.textContent = "Sign in above first, then come back to buy.";
+    $("#otii-e").focus();
     return;
   }
   try {
-    const resp = await fetch(API_URL + "/otii/claim?session_id=" + encodeURIComponent(sid));
-    const data = await resp.json();
-    if (data.key){
-      localStorage.setItem("otii-license", data.key);
-      setPlus(true);
-      renderSettings();
-      toast("Plus unlocked — your key is saved in Settings");
-    }
-  } catch {}
+    const d = await otiiApi(path, { method: "POST" });
+    location.href = d.url;
+  } catch (err) { toast(err.message || "Couldn't start checkout — try again in a minute."); }
+}
+// After returning from Stripe (?upgraded=1) or a canceled checkout (?canceled=1)
+async function claimFromCheckout(){
+  const qs = new URLSearchParams(location.search);
+  if (qs.get("canceled")) history.replaceState(null, "", location.pathname);
+  if (!qs.get("upgraded")) return;
+  history.replaceState(null, "", location.pathname);
+  await refreshOtiiAccount();
+  if (plus){ toast("Plus unlocked — thank you!"); renderSettings(); go("home"); }
 }
 
 /* ---------- State ---------- */
@@ -1107,18 +1107,17 @@ function renderSettings(){
   $("#stat-sub").textContent = (act === 1 ? "thing" : "things") + " saved on this device" + (arch ? " · " + arch + " archived" : "")
     + (plus ? "" : " · " + items.length + " of " + FREE_LIMIT + " free");
   if (plus){
-    const lic = localStorage.getItem("otii-license");
     $("#plus-card-title").textContent = "Plus — unlocked";
     $("#btn-plus-from-settings").style.display = "none";
-    if (plusKind === "subscription"){
-      $("#plus-card-sub").textContent = "Unlimited saved things. Subscribed at " + subEmail + " — $3.99/mo.";
-      $("#btn-manage-sub").style.display = "";
-    } else {
-      $("#plus-card-sub").textContent = "Unlimited saved things. Thank you for supporting the app!"
-        + (lic ? " Your license key (works on any device): " + lic : "");
-      $("#btn-manage-sub").style.display = "none";
-    }
+    $("#plus-card-sub").textContent = "Unlimited saved things. Thank you for supporting the app!";
+    $("#btn-manage-sub").style.display = otiiToken ? "" : "none";
+  } else {
+    $("#plus-card-title").textContent = "Oh, There It Is! Plus";
+    $("#plus-card-sub").textContent = "Unlimited saved things. One payment, no subscription — $5.99.";
+    $("#btn-plus-from-settings").style.display = "";
+    $("#btn-manage-sub").style.display = "none";
   }
+  renderOtiiAccountUI();
   const eraseBtn = $("#btn-erase");
   eraseBtn.textContent = "Erase everything";
   eraseBtn.classList.remove("armed");
@@ -1466,27 +1465,25 @@ $("#btn-add-another").addEventListener("click", () => openAdd());
 $("#btn-saved-done").addEventListener("click", () => go("home"));
 $("#btn-buy-plus").addEventListener("click", buyPlus);
 $("#btn-restore-plus").addEventListener("click", () => restorePlus(true));
-$("#btn-have-key").addEventListener("click", () => { $("#key-wrap").style.display = ""; $("#f-license").focus(); });
-$("#btn-activate-key").addEventListener("click", activateKey);
+$("#btn-buy-web").addEventListener("click", () => startOtiiCheckout("/otii/checkout"));
+$("#btn-subscribe-web").addEventListener("click", () => startOtiiCheckout("/otii/subscribe"));
 $("#btn-plus-from-settings").addEventListener("click", () => { renderPlusScreen(); go("plus"); });
-$("#btn-restore-sub").addEventListener("click", () => { $("#sub-restore-wrap").style.display = ""; $("#f-sub-email").focus(); });
-$("#btn-check-sub").addEventListener("click", () => {
-  const email = $("#f-sub-email").value.trim().toLowerCase();
-  if (!email){ $("#f-sub-email").focus(); return; }
-  checkSubscription(email, true);
+$("#otii-acct-submit").addEventListener("click", doOtiiAuth);
+$("#otii-acct-switch").addEventListener("click", () => {
+  otiiAuthMode = otiiAuthMode === "signup" ? "login" : "signup";
+  $("#otii-acct-submit").textContent = otiiAuthMode === "signup" ? "CREATE FREE ACCOUNT" : "SIGN IN";
+  $("#otii-acct-switch").textContent = otiiAuthMode === "signup" ? "Already have an account? Sign in" : "New here? Create a free account";
+  $("#otii-acct-msg").textContent = "";
 });
+$("#otii-acct-signout").addEventListener("click", () => { otiiSignOut(); toast("Signed out"); });
+$("#btn-settings-signin").addEventListener("click", () => { otiiAuthMode = "login"; renderPlusScreen(); go("plus"); $("#otii-e").focus(); });
+$("#btn-settings-signout").addEventListener("click", () => { otiiSignOut(); toast("Signed out"); });
 $("#btn-manage-sub").addEventListener("click", async () => {
   try {
-    const resp = await fetch(API_URL + "/otii/subscription-portal", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: subEmail })
-    });
-    const data = await resp.json();
+    const data = await otiiApi("/otii/portal", { method: "POST" });
     if (data.url) window.location.href = data.url;
-    else toast(data.error || "Couldn't open billing — try again in a minute.");
-  } catch {
-    toast("Couldn't reach the server — try again in a minute.");
+  } catch (err) {
+    toast(err.message || "Couldn't open billing — try again in a minute.");
   }
 });
 
@@ -1606,9 +1603,10 @@ dbAll().then(all => {
   renderMeter();
   claimFromCheckout();
   if (!plus) restorePlus(false);
-  // a subscription (unlike the one-time key) can lapse - re-check quietly on
-  // every launch so a cancellation actually re-locks the app
-  if (plusKind === "subscription" && subEmail) checkSubscription(subEmail, false);
+  // a subscription (unlike the one-time purchase) can lapse - re-check quietly
+  // on every launch so a cancellation actually re-locks the app
+  if (otiiToken) refreshOtiiAccount();
+  renderOtiiAccountUI();
 }).catch(() => {
   toast("Storage isn't available in this browser.");
   renderHome();
