@@ -1476,7 +1476,7 @@ $("#otii-acct-switch").addEventListener("click", () => {
   $("#otii-acct-msg").textContent = "";
 });
 $("#otii-acct-signout").addEventListener("click", () => { otiiSignOut(); toast("Signed out"); });
-$("#btn-settings-signin").addEventListener("click", () => { otiiAuthMode = "login"; renderPlusScreen(); go("plus"); $("#otii-e").focus(); });
+$("#btn-settings-signin").addEventListener("click", () => { renderPlusScreen(); go("plus"); $("#otii-e").focus(); });
 $("#btn-settings-signout").addEventListener("click", () => { otiiSignOut(); toast("Signed out"); });
 $("#btn-manage-sub").addEventListener("click", async () => {
   try {
