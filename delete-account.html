@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Delete your account — Oh, There It Is!</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="How to delete your Oh, There It Is! account, and what is and is not deleted.">
+<meta name="theme-color" content="#0E7C73">
+<link rel="canonical" href="https://kimberlyschultz1968.github.io/oh-there-it-is/delete-account.html">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0D1B2A; --teal:#0E7C73; --teal-dark:#0A5F58; --mint-soft:#DCEFEA; --cream:#F4F1EB;
+    --muted:#5C6B7A; --line:#E5E0D5; --danger:#B3402E;
+    color-scheme:light;
+  }
+  *{box-sizing:border-box}
+  body{font-family:'Nunito','Segoe UI',system-ui,sans-serif; background:var(--cream); color:var(--navy);
+    line-height:1.6; margin:0; padding:24px 18px 60px; -webkit-font-smoothing:antialiased}
+  main{max-width:640px; margin:0 auto}
+  img.logo{width:200px; max-width:70%; height:auto; display:block; margin:10px auto 26px}
+  h1{font-family:'Baloo 2','Nunito',sans-serif; font-size:26px; line-height:1.2; margin:0 0 8px}
+  h2{font-family:'Baloo 2','Nunito',sans-serif; font-size:18px; margin:28px 0 0; color:var(--teal-dark)}
+  p, li{font-size:15.5px}
+  p{margin:10px 0}
+  li{margin:6px 0}
+  a{color:var(--teal)}
+  .card{background:#fff; border:1.5px solid var(--line); border-radius:16px; padding:18px 18px 20px;
+    box-shadow:0 2px 10px rgba(13,24,42,.06); margin-top:12px}
+  label{display:block; font-weight:800; font-size:14.5px; margin:14px 0 5px}
+  label:first-of-type{margin-top:0}
+  input{width:100%; font:inherit; font-size:16px; color:var(--navy); background:#fff; border:1.5px solid var(--line);
+    border-radius:12px; padding:12px 14px; outline:none}
+  input:focus{border-color:var(--teal)}
+  button{width:100%; margin-top:18px; padding:14px; font-family:'Baloo 2','Nunito',sans-serif; font-weight:700;
+    font-size:16px; letter-spacing:.4px; border:0; border-radius:999px; background:var(--danger); color:#fff; cursor:pointer}
+  button:disabled{opacity:.6; cursor:default}
+  :focus-visible{outline:3px solid var(--teal); outline-offset:2px}
+  #msg{margin-top:14px; font-weight:800}
+  #msg:empty, #f[hidden] + #msg{margin-top:0}
+  #msg.bad{color:var(--danger)}
+  #msg.ok{color:var(--teal-dark)}
+  .card.done{background:var(--mint-soft); border-color:#BFE3DA}
+  .links{margin-top:28px}
+</style>
+</head>
+<body>
+<main>
+  <img class="logo" src="logo.png" alt="Oh, There It Is!">
+  <h1>Delete your account</h1>
+  <p>You can delete your Oh, There It Is! account at any time. It takes about a minute.</p>
+
+  <h2>In the app</h2>
+  <ol>
+    <li>Open the app and tap <b>Settings</b>.</li>
+    <li>In the <b>Account</b> box, tap <b>Delete my account</b>.</li>
+    <li>Type your password and confirm.</li>
+  </ol>
+
+  <h2>Or here on the web</h2>
+  <p>Sign in with the email and password you use for the app, and your account will be deleted.</p>
+  <div class="card" id="card">
+    <form id="f" novalidate>
+      <label for="e">Email</label>
+      <input id="e" type="email" autocomplete="email" inputmode="email">
+      <label for="p">Password</label>
+      <input id="p" type="password" autocomplete="current-password">
+      <button id="go" type="submit">Delete my account for good</button>
+    </form>
+    <div id="msg" role="status" aria-live="polite"></div>
+  </div>
+
+  <h2>What is deleted</h2>
+  <ul>
+    <li>Your account: your email address, your password and your plan (free or Plus).</li>
+    <li>Any Plus subscription is cancelled first, so you are not billed again.</li>
+    <li>If you also joined the tips list with the same email address, that address is removed too.</li>
+    <li>We email you a confirmation when it is done.</li>
+  </ul>
+
+  <h2>What is not affected</h2>
+  <ul>
+    <li>Things you saved (photos, places, notes) live only on your own phone or computer, never on our server, so
+    deleting your account does not remove them. To clear them, open the app and tap
+    <b>Settings</b>, then <b>Erase everything</b>. A backup file you downloaded is yours to keep.</li>
+    <li>Plus belongs to your account, so it ends when the account is deleted. If you have a question about a
+    purchase, email us before you delete.</li>
+    <li>Payment records held by Stripe, and any purchase made through Google Play, are kept by those companies under
+    their own policies.</li>
+    <li>If you also bought a multi-app bundle from The Binder, it is billed separately and is not changed. You can
+    manage it at <a href="https://thebinderapps.com/bundle.html">thebinderapps.com/bundle.html</a>.</li>
+  </ul>
+
+  <h2>Can't sign in, or only on the tips list?</h2>
+  <p>Email <a href="mailto:thebinderapps@gmail.com?subject=Delete%20my%20Oh%2C%20There%20It%20Is!%20data">thebinderapps@gmail.com</a>
+  from the address you used and we will delete your account or remove you from the tips list.</p>
+
+  <p class="links"><a href="privacy.html">Privacy Policy</a> &middot; <a href="./">Back to the app</a></p>
+</main>
+<script>
+(function(){
+  var API = 'https://the-binder-api.onrender.com';
+  var f = document.getElementById('f'), msg = document.getElementById('msg'), go = document.getElementById('go');
+  function say(t, cls){
+    msg.textContent = t; msg.className = cls || '';
+    // on a phone the message sits just below the fold: bring it into view
+    if (cls && msg.scrollIntoView) msg.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+  async function post(path, body, token){
+    var r = await fetch(API + path, { method: 'POST',
+      headers: Object.assign({ 'Content-Type': 'application/json' }, token ? { Authorization: 'Bearer ' + token } : {}),
+      body: JSON.stringify(body) });
+    var d = await r.json().catch(function(){ return {}; });
+    if (!r.ok) throw new Error(d.error || 'Something went wrong. Please try again.');
+    return d;
+  }
+  f.addEventListener('submit', async function(ev){
+    ev.preventDefault();
+    var email = document.getElementById('e').value.trim(), pw = document.getElementById('p').value;
+    if (!email || !pw) { say('Type your email and password first.', 'bad'); return; }
+    go.disabled = true; say('Checking your details… this can take a few seconds the first time.');
+    try {
+      var s = await post('/otii/auth/login', { email: email, password: pw });
+      say('Deleting…');
+      await post('/otii/account/delete', { password: pw }, s.token);
+      // this page shares its address with the app, so also sign the app out on this device
+      try { ['otii.token', 'otii.email', 'otii.plan'].forEach(function(k){ localStorage.removeItem(k); }); } catch (e) {}
+      f.reset(); f.hidden = true; document.getElementById('card').classList.add('done');
+      say('Your account has been deleted. We sent a confirmation to your email.', 'ok');
+    } catch (err) {
+      say(err instanceof TypeError ? "We couldn't reach the server. Check your connection and try again." : err.message, 'bad');
+      go.disabled = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>

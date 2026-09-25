@@ -301,6 +301,22 @@
     padding:11px 20px; z-index:60; pointer-events:none; transition:all .25s ease; white-space:nowrap}
   #toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
 
+  /* ---- Delete my account: an in-page confirm box. No native confirm()/alert() - the Android WebView may not show them. ---- */
+  .linkish.warn{color:var(--danger)}
+  #del-ovl{display:none; position:fixed; inset:0; z-index:90; background:rgba(13,24,42,.55); padding:16px; overflow-y:auto}
+  #del-ovl.open{display:flex}
+  .del-box{margin:auto; width:100%; max-width:400px; background:var(--white); border-radius:22px; padding:22px 20px 18px;
+    box-shadow:0 18px 50px rgba(13,24,42,.35)}
+  .del-box h2{font-size:20px; line-height:1.2}
+  .del-box .sub{margin-top:8px}
+  .del-box label{display:block; font-weight:800; font-size:14px; margin:16px 0 6px}
+  .del-msg{min-height:1.3em; margin-top:8px; font-size:13.5px; font-weight:700; color:var(--danger)}
+  .del-box .btn{margin-top:8px}
+  .del-box .btn:disabled{opacity:.6; cursor:default}
+  #del-done{display:none}
+  #del-ovl.done #del-form{display:none}
+  #del-ovl.done #del-done{display:block}
+
   @media (prefers-reduced-motion: reduce){
     *{animation:none !important; transition:none !important}
   }
@@ -464,6 +480,7 @@
         <div id="otii-acct-signedin" style="display:none">
           <p class="sub">Signed in as <b id="otii-acct-email"></b></p>
           <button class="linkish" id="otii-acct-signout">Sign out</button>
+          <button class="linkish warn" id="otii-acct-delete">Delete my account</button>
         </div>
       </div>
 
@@ -629,6 +646,7 @@
       <p class="sub" id="otii-settings-acct-sub">Not signed in — Plus purchases work best with a free account.</p>
       <button class="btn frame" id="btn-settings-signin">SIGN IN OR CREATE ACCOUNT</button>
       <button class="linkish" id="btn-settings-signout" style="display:none">Sign out</button>
+      <button class="linkish warn" id="btn-settings-delete" style="display:none">Delete my account</button>
     </div>
 
     <div class="card" id="plus-card">
@@ -640,7 +658,7 @@
 
     <div class="card">
       <h2><span class="ic" data-ic="lock"></span> Private</h2>
-      <p class="sub">Your things are saved privately on this device. Nothing is sent anywhere.</p>
+      <p class="sub">Your things and photos are saved privately on this device, and we never receive them. An account is only needed to buy Plus.</p>
     </div>
 
     <div class="card">
@@ -691,6 +709,26 @@
 </div>
 
 <div id="toast" role="status"></div>
+
+<!-- Delete my account: in-page confirm (no native confirm()/alert(), which the Android WebView may not show) -->
+<div id="del-ovl" role="dialog" aria-modal="true" aria-labelledby="del-title">
+  <div class="del-box">
+    <form id="del-form" novalidate>
+      <h2 id="del-title">Delete your account?</h2>
+      <p class="sub">This permanently deletes your Oh, There It Is! account. Any Plus subscription is cancelled, and Plus ends with the account. It cannot be undone. Things you saved stay on this device until you clear them or use Settings to erase them.</p>
+      <label for="del-pw">Type your password to confirm</label>
+      <input class="field" id="del-pw" type="password" autocomplete="current-password">
+      <div class="del-msg" id="del-msg" role="alert"></div>
+      <button type="submit" class="btn danger armed" id="del-go">Delete my account</button>
+      <button type="button" class="btn ghost" id="del-cancel">Cancel</button>
+    </form>
+    <div id="del-done" role="status">
+      <h2>Your account has been deleted.</h2>
+      <p class="sub">We also sent a confirmation to your email.</p>
+      <button type="button" class="btn primary" id="del-ok">OK</button>
+    </div>
+  </div>
+</div>
 </div>
 
 <script>
@@ -889,6 +927,44 @@ async function doOtiiAuth(){
     toast(otiiAuthMode === "signup" ? "Account created" : "Signed in");
   } catch (err) { msg.textContent = err.message; }
 }
+/* ---------- Delete my account ----------
+   The server checks the password (a wrong one is a 400, never a 401, so the app does not sign the
+   person out), cancels any subscription first, removes the account and emails a confirmation.
+   The things they saved live only on this device, so they are deliberately left alone. */
+let delBusy = false;
+function openDelete(){
+  if (!otiiToken) return;
+  const o = $("#del-ovl");
+  o.classList.remove("done");
+  $("#del-pw").value = ""; $("#del-msg").textContent = "";
+  const go = $("#del-go"); go.disabled = false; go.textContent = "Delete my account";
+  $("#del-cancel").disabled = false;
+  o.classList.add("open");
+  setTimeout(() => $("#del-pw").focus(), 30);
+}
+function closeDelete(){ if (!delBusy) $("#del-ovl").classList.remove("open"); }
+async function doDelete(){
+  if (delBusy) return;
+  const pw = $("#del-pw").value, msg = $("#del-msg");
+  if (!pw){ msg.textContent = "Enter your password first."; $("#del-pw").focus(); return; }
+  const go = $("#del-go"), cancel = $("#del-cancel");
+  delBusy = true; msg.textContent = "";
+  go.disabled = true; cancel.disabled = true; go.textContent = "Deleting…";
+  try {
+    await otiiApi("/otii/account/delete", { method: "POST", body: JSON.stringify({ password: pw }) });
+  } catch (err) {
+    delBusy = false; go.disabled = false; cancel.disabled = false; go.textContent = "Delete my account";
+    msg.textContent = err instanceof TypeError
+      ? "We couldn't reach the server. Check your connection and try again."
+      : (err.message || "Something went wrong. Please try again.");
+    return;
+  }
+  delBusy = false;
+  $("#del-pw").value = "";
+  $("#del-ovl").classList.add("done");
+  otiiSignOut(); // exactly what Sign out does; saved things on this device are left alone
+  setTimeout(() => $("#del-ok").focus(), 30);
+}
 function renderOtiiAccountUI(){
   const signedIn = !!otiiToken;
   const form = $("#otii-acct-form"), signedInBlock = $("#otii-acct-signedin");
@@ -907,6 +983,11 @@ function renderOtiiAccountUI(){
   const inBtn = $("#btn-settings-signin"), outBtn = $("#btn-settings-signout");
   if (inBtn) inBtn.style.display = signedIn ? "none" : "";
   if (outBtn) outBtn.style.display = signedIn ? "" : "none";
+  const delBtn = $("#btn-settings-delete");
+  if (delBtn) delBtn.style.display = signedIn ? "" : "none";
+  // signed out from somewhere else (expired session) while the box is open: close it
+  const dOvl = $("#del-ovl");
+  if (!signedIn && dOvl && dOvl.classList.contains("open") && !dOvl.classList.contains("done")) dOvl.classList.remove("open");
 }
 async function playBilling(){
   if (!("getDigitalGoodsService" in window)) return null;
@@ -1478,6 +1559,23 @@ $("#otii-acct-switch").addEventListener("click", () => {
 $("#otii-acct-signout").addEventListener("click", () => { otiiSignOut(); toast("Signed out"); });
 $("#btn-settings-signin").addEventListener("click", () => { renderPlusScreen(); go("plus"); $("#otii-e").focus(); });
 $("#btn-settings-signout").addEventListener("click", () => { otiiSignOut(); toast("Signed out"); });
+$("#btn-settings-delete").addEventListener("click", openDelete);
+$("#otii-acct-delete").addEventListener("click", openDelete);
+$("#del-form").addEventListener("submit", e => { e.preventDefault(); doDelete(); });
+$("#del-cancel").addEventListener("click", closeDelete);
+$("#del-ok").addEventListener("click", () => $("#del-ovl").classList.remove("open", "done"));
+$("#del-ovl").addEventListener("click", e => { if (e.target.id === "del-ovl" && !$("#del-ovl").classList.contains("done")) closeDelete(); });
+document.addEventListener("keydown", e => {
+  const o = $("#del-ovl");
+  if (!o.classList.contains("open")) return;
+  if (e.key === "Escape"){ if (o.classList.contains("done")) $("#del-ok").click(); else closeDelete(); return; }
+  if (e.key !== "Tab") return;
+  const f = Array.from(o.querySelectorAll("input,button")).filter(b => !b.disabled && b.offsetParent !== null);
+  if (!f.length){ e.preventDefault(); return; }
+  const first = f[0], last = f[f.length - 1];
+  if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+});
 $("#btn-manage-sub").addEventListener("click", async () => {
   try {
     const data = await otiiApi("/otii/portal", { method: "POST" });
