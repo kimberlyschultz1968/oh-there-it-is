@@ -303,6 +303,22 @@
 
   /* ---- Delete my account: an in-page confirm box. No native confirm()/alert() - the Android WebView may not show them. ---- */
   .linkish.warn{color:var(--danger)}
+
+  /* ---- Forgot password: a small panel that swaps in for the sign-in form inside the Go Plus account card ---- */
+  #otii-forgot{display:none}
+  #otii-acct-card.fp-open #otii-forgot{display:block}
+  #otii-acct-card.fp-open > h2, #otii-acct-card.fp-open > .sub,
+  #otii-acct-card.fp-open #otii-acct-form, #otii-acct-card.fp-open #otii-acct-signedin{display:none}
+  #otii-forgot .sub{margin:6px 0 0}
+  #otii-forgot .field{margin-top:12px}
+  #otii-forgot .fp-msg{min-height:1.3em; margin-top:8px; font-size:13.5px; font-weight:700; color:var(--danger)}
+  #otii-forgot .btn{margin-top:8px}
+  #otii-forgot .btn:disabled{opacity:.6; cursor:default}
+  #otii-fp-done{display:none}
+  #otii-fp-done .fp-ok{color:var(--teal-dark); font-weight:700}
+  #otii-forgot.done #otii-fp-form{display:none}
+  #otii-forgot.done #otii-fp-done{display:block}
+  #otii-fp-link{margin:8px 0 0 auto; font-size:13px}
   #del-ovl{display:none; position:fixed; inset:0; z-index:90; background:rgba(13,24,42,.55); padding:16px; overflow-y:auto}
   #del-ovl.open{display:flex}
   .del-box{margin:auto; width:100%; max-width:400px; background:var(--white); border-radius:22px; padding:22px 20px 18px;
@@ -472,10 +488,25 @@
         <div id="otii-acct-form">
           <input class="field" id="otii-e" type="email" inputmode="email" autocomplete="email" placeholder="Email" style="margin-top:10px">
           <input class="field" id="otii-p" type="password" autocomplete="current-password" placeholder="Password (6+ characters)" style="margin-top:8px">
+          <button type="button" class="linkish" id="otii-fp-link" style="display:none">Forgot password?</button>
           <div style="position:absolute;left:-9999px" aria-hidden="true"><input id="otii-w" type="text" tabindex="-1" autocomplete="off"></div>
           <div class="sub" id="otii-acct-msg" style="margin-top:6px; min-height:1.2em"></div>
           <button class="btn primary" id="otii-acct-submit" style="margin-top:8px">CREATE FREE ACCOUNT</button>
           <button class="linkish" id="otii-acct-switch">Already have an account? Sign in</button>
+        </div>
+        <div id="otii-forgot">
+          <h2>Reset your password</h2>
+          <form id="otii-fp-form" novalidate>
+            <p class="sub">Type the email you signed up with and we will email you a link.</p>
+            <input class="field" id="otii-fp-e" type="email" inputmode="email" autocomplete="email" placeholder="Email" aria-label="Email">
+            <div class="fp-msg" id="otii-fp-msg" role="alert"></div>
+            <button type="submit" class="btn primary" id="otii-fp-send">Send reset link</button>
+          </form>
+          <div id="otii-fp-done" role="status">
+            <p class="sub fp-ok" id="otii-fp-ok"></p>
+            <p class="sub">It can take a few minutes; look in your spam folder too.</p>
+          </div>
+          <button type="button" class="linkish" id="otii-fp-back">Back to sign in</button>
         </div>
         <div id="otii-acct-signedin" style="display:none">
           <p class="sub">Signed in as <b id="otii-acct-email"></b></p>
@@ -927,6 +958,43 @@ async function doOtiiAuth(){
     toast(otiiAuthMode === "signup" ? "Account created" : "Signed in");
   } catch (err) { msg.textContent = err.message; }
 }
+/* ---------- Forgot password ----------
+   Asks the server to email a reset link (POST /otii/auth/forgot, no login needed). The server answers the same
+   way whether or not the address has an account, so nothing here can reveal who has one. The emailed link
+   finishes the job on thebinderapps.com/reset-password.html - the app never shows a reset screen. */
+let fpBusy = false;
+function showForgot(){
+  $("#otii-fp-e").value = ($("#otii-e").value || "").trim();
+  $("#otii-fp-msg").textContent = "";
+  const send = $("#otii-fp-send"); send.disabled = false; send.textContent = "Send reset link";
+  $("#otii-forgot").classList.remove("done");
+  $("#otii-acct-card").classList.add("fp-open");
+  setTimeout(() => { if ($("#otii-fp-e").value) send.focus(); else $("#otii-fp-e").focus(); }, 30);
+}
+function hideForgot(){
+  const card = $("#otii-acct-card"); if (card) card.classList.remove("fp-open");
+  const p = $("#otii-forgot"); if (p) p.classList.remove("done");
+  fpBusy = false;
+}
+async function doForgot(){
+  if (fpBusy) return;
+  const email = $("#otii-fp-e").value.trim(), msg = $("#otii-fp-msg");
+  msg.textContent = "";
+  if (!email){ msg.textContent = "Enter your email first."; $("#otii-fp-e").focus(); return; }
+  const send = $("#otii-fp-send");
+  fpBusy = true; send.disabled = true; send.textContent = "Sending…";
+  try {
+    const d = await otiiApi("/otii/auth/forgot", { method: "POST", body: JSON.stringify({ email }) });
+    $("#otii-fp-ok").textContent = d.message || "If that email has an account, we have sent a link to reset the password. The link works for one hour.";
+    $("#otii-forgot").classList.add("done");
+    setTimeout(() => $("#otii-fp-back").focus(), 30);
+  } catch (err) {
+    msg.textContent = err instanceof TypeError
+      ? "Could not reach the server. Check your connection and try again."
+      : (err.message || "Something went wrong. Please try again.");
+  }
+  fpBusy = false; send.disabled = false; send.textContent = "Send reset link";
+}
 /* ---------- Delete my account ----------
    The server checks the password (a wrong one is a 400, never a 401, so the app does not sign the
    person out), cancels any subscription first, removes the account and emails a confirmation.
@@ -1034,6 +1102,7 @@ function renderMeter(){
   fill.classList.toggle("warn", n >= FREE_LIMIT - 5);
 }
 function renderPlusScreen(){
+  hideForgot();
   $("#plus-title").textContent = (!plus && items.length >= FREE_LIMIT)
     ? "You've filled your free " + FREE_LIMIT + "!"
     : "Go Plus";
@@ -1555,7 +1624,16 @@ $("#otii-acct-switch").addEventListener("click", () => {
   $("#otii-acct-submit").textContent = otiiAuthMode === "signup" ? "CREATE FREE ACCOUNT" : "SIGN IN";
   $("#otii-acct-switch").textContent = otiiAuthMode === "signup" ? "Already have an account? Sign in" : "New here? Create a free account";
   $("#otii-acct-msg").textContent = "";
+  $("#otii-fp-link").style.display = otiiAuthMode === "login" ? "" : "none";
 });
+$("#otii-fp-link").addEventListener("click", showForgot);
+$("#otii-fp-back").addEventListener("click", () => {
+  const typed = $("#otii-fp-e").value.trim();
+  hideForgot();
+  if (typed) $("#otii-e").value = typed;
+  $("#otii-fp-link").focus();
+});
+$("#otii-fp-form").addEventListener("submit", e => { e.preventDefault(); doForgot(); });
 $("#otii-acct-signout").addEventListener("click", () => { otiiSignOut(); toast("Signed out"); });
 $("#btn-settings-signin").addEventListener("click", () => { renderPlusScreen(); go("plus"); $("#otii-e").focus(); });
 $("#btn-settings-signout").addEventListener("click", () => { otiiSignOut(); toast("Signed out"); });
