@@ -580,7 +580,15 @@
       <p class="field-hint">Pick a place so we know where to look.</p>
     </div>
 
-    <details class="more-details" id="add-details"><summary>Add details <span class="optional">(photo, exact spot, notes)</span></summary>
+    <div class="step">
+      <div class="step-label">Exact spot <span class="optional">(optional)</span></div>
+      <div class="field-wrap">
+        <input class="field" id="f-spot" placeholder="e.g., Red Christmas Bin #3, top shelf" autocomplete="off">
+        <button type="button" class="mic-btn" data-mic="f-spot" aria-label="Speak instead of typing"><span class="ic" data-ic="mic"></span></button>
+      </div>
+    </div>
+
+    <details class="more-details" id="add-details"><summary>Add details <span class="optional">(photo, kind, notes, starred)</span></summary>
     <div class="step" id="step-photo">
       <div class="step-label">Take a close-up photo <span class="optional">(optional)</span></div>
       <div class="photo-zone" id="photo-zone">
@@ -613,14 +621,6 @@
           <img id="photo2-preview" alt="Wider photo of where this item is">
           <button class="linkish" id="photo2-remove" style="margin-top:8px">Remove photo</button>
         </div>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-label">Exact spot <span class="optional">(optional)</span></div>
-      <div class="field-wrap">
-        <input class="field" id="f-spot" placeholder="e.g., Red Christmas Bin #3, top shelf" autocomplete="off">
-        <button type="button" class="mic-btn" data-mic="f-spot" aria-label="Speak instead of typing"><span class="ic" data-ic="mic"></span></button>
       </div>
     </div>
 
@@ -1378,7 +1378,7 @@ function openAdd(edit){
   $("#f-notes").value = edit ? (edit.notes || "") : "";
   $("#loc-custom").value = "";
   $("#loc-custom-wrap").style.display = "none";
-  $("#add-details").open = !!(edit && (edit.photo || edit.photo2 || edit.spot || edit.notes || edit.important || (edit.category && edit.category !== "Other")));
+  $("#add-details").open = !!(edit && (edit.photo || edit.photo2 || edit.notes || edit.important || (edit.category && edit.category !== "Other")));
   $$("#loc-chips .chip").forEach(c => c.classList.remove("on"));
   $$("#cat-chips .chip").forEach(c => c.classList.remove("on"));
   $$(".step").forEach(s => s.classList.remove("invalid"));
