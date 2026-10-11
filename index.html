@@ -191,6 +191,13 @@
 
   /* ---- Add / edit form ---- */
   .step{margin:20px 0}
+  .more-details{margin:18px 0 6px; border-top:1px solid rgba(13,24,42,.12); padding-top:12px}
+  .more-details>summary{cursor:pointer; font-weight:800; font-size:15px; color:var(--teal); list-style-position:inside}
+  .more-details[open]>summary{margin-bottom:6px}
+  .save-bar{position:sticky; bottom:84px; z-index:20; background:linear-gradient(to bottom,rgba(244,241,235,0),var(--cream) 22%); padding:16px 0 4px; margin-top:12px; text-align:center}
+  .backup-note{background:var(--white); border-radius:14px; box-shadow:var(--shadow); padding:12px 14px; margin-top:14px; font-size:14px}
+  .backup-note b{display:block; margin-bottom:2px}
+  .backup-note .linkish{margin-top:4px}
   .step-label{font-weight:800; font-size:15px; margin-bottom:8px; display:flex; align-items:center; gap:8px}
   .step-num{width:23px; height:23px; border-radius:50%; background:var(--teal); color:var(--white);
     font-size:12.5px; font-weight:800; display:flex; align-items:center; justify-content:center; flex:none}
@@ -407,6 +414,13 @@
       <span id="meter-text"></span>
     </div>
 
+    <div id="backup-reminder" class="backup-note" style="display:none">
+      <b>Back up your things</b>
+      Your things live only on this device. If you lose or reset it, they're gone. A backup file keeps them safe.
+      <div><button class="btn frame" id="btn-backup-home" style="margin-top:8px">Download a backup</button>
+      <button class="linkish" id="btn-backup-later">Remind me later</button></div>
+    </div>
+
     <div class="sec-title">
       <h2>Recently added</h2>
     </div>
@@ -486,7 +500,7 @@
            What you save stays on-device either way - this is just who's paying. -->
       <div class="card" id="otii-acct-card" style="text-align:left; margin:22px 0 12px; width:100%">
         <h2 id="otii-acct-title">Sign in first</h2>
-        <p class="sub" id="otii-acct-sub" style="margin-top:6px">A free account keeps Plus with you if you ever switch devices.</p>
+        <p class="sub" id="otii-acct-sub" style="margin-top:6px">A free account keeps your Plus purchase with you on any device. It does not sync your saved things — use a backup for those.</p>
         <div id="otii-acct-form">
           <input class="field" id="otii-e" type="email" inputmode="email" autocomplete="email" placeholder="Email" style="margin-top:10px">
           <input class="field" id="otii-p" type="password" autocomplete="current-password" placeholder="Password (6+ characters)" style="margin-top:8px">
@@ -547,8 +561,28 @@
       <h1 id="add-title">Let's remember this one.</h1>
     </header>
 
+    <div class="step" id="step-name">
+      <div class="step-label"><span class="step-num">1</span> What is it?</div>
+      <div class="field-wrap">
+        <input class="field" id="f-name" placeholder="e.g., Christmas lights" autocomplete="off">
+        <button type="button" class="mic-btn" data-mic="f-name" aria-label="Speak instead of typing"><span class="ic" data-ic="mic"></span></button>
+      </div>
+      <p class="field-hint">Give it a name so we can find it later.</p>
+    </div>
+
+    <div class="step" id="step-loc">
+      <div class="step-label"><span class="step-num">2</span> Where did you put it?</div>
+      <div class="chips" id="loc-chips"></div>
+      <div class="field-wrap" id="loc-custom-wrap">
+        <input class="field" id="loc-custom" placeholder="Type the place…" autocomplete="off">
+        <button type="button" class="mic-btn" data-mic="loc-custom" aria-label="Speak instead of typing"><span class="ic" data-ic="mic"></span></button>
+      </div>
+      <p class="field-hint">Pick a place so we know where to look.</p>
+    </div>
+
+    <details class="more-details" id="add-details"><summary>Add details <span class="optional">(photo, exact spot, notes)</span></summary>
     <div class="step" id="step-photo">
-      <div class="step-label"><span class="step-num">1</span> Take a close-up photo <span class="optional">(optional)</span></div>
+      <div class="step-label">Take a close-up photo <span class="optional">(optional)</span></div>
       <div class="photo-zone" id="photo-zone">
         <div class="photo-btns">
           <label class="pbtn solid"><span class="ic" data-ic="camera"></span> Take a photo
@@ -582,27 +616,8 @@
       </div>
     </div>
 
-    <div class="step" id="step-name">
-      <div class="step-label"><span class="step-num">2</span> What is it?</div>
-      <div class="field-wrap">
-        <input class="field" id="f-name" placeholder="e.g., Christmas lights" autocomplete="off">
-        <button type="button" class="mic-btn" data-mic="f-name" aria-label="Speak instead of typing"><span class="ic" data-ic="mic"></span></button>
-      </div>
-      <p class="field-hint">Give it a name so we can find it later.</p>
-    </div>
-
-    <div class="step" id="step-loc">
-      <div class="step-label"><span class="step-num">3</span> Where did you put it?</div>
-      <div class="chips" id="loc-chips"></div>
-      <div class="field-wrap" id="loc-custom-wrap">
-        <input class="field" id="loc-custom" placeholder="Type the place…" autocomplete="off">
-        <button type="button" class="mic-btn" data-mic="loc-custom" aria-label="Speak instead of typing"><span class="ic" data-ic="mic"></span></button>
-      </div>
-      <p class="field-hint">Pick a place so we know where to look.</p>
-    </div>
-
     <div class="step">
-      <div class="step-label"><span class="step-num">4</span> Exact spot <span class="optional">(optional)</span></div>
+      <div class="step-label">Exact spot <span class="optional">(optional)</span></div>
       <div class="field-wrap">
         <input class="field" id="f-spot" placeholder="e.g., Red Christmas Bin #3, top shelf" autocomplete="off">
         <button type="button" class="mic-btn" data-mic="f-spot" aria-label="Speak instead of typing"><span class="ic" data-ic="mic"></span></button>
@@ -610,7 +625,7 @@
     </div>
 
     <div class="step">
-      <div class="step-label"><span class="step-num">5</span> What kind of thing? <span class="optional">(optional)</span></div>
+      <div class="step-label">What kind of thing? <span class="optional">(optional)</span></div>
       <div class="chips" id="cat-chips"></div>
     </div>
 
@@ -623,8 +638,12 @@
       <textarea class="field" id="f-notes" placeholder="Anything else worth noting?"></textarea>
     </div>
 
-    <button class="btn primary" id="btn-save">SAVE — WE'LL REMEMBER</button>
-    <button class="linkish" data-go-home>Cancel</button>
+    </details>
+
+    <div class="save-bar">
+      <button class="btn primary" id="btn-save">SAVE — WE'LL REMEMBER</button>
+      <button class="linkish" data-go-home>Cancel</button>
+    </div>
     <footer class="brand-footer" data-footer></footer>
   </section>
 
@@ -676,7 +695,7 @@
 
     <div class="card" id="otii-settings-acct">
       <h2>Account</h2>
-      <p class="sub" id="otii-settings-acct-sub">Not signed in — Plus purchases work best with a free account.</p>
+      <p class="sub" id="otii-settings-acct-sub">Not signed in. Signing in does not sync your things between devices — it only keeps a Plus purchase with you.</p>
       <button class="btn frame" id="btn-settings-signin">SIGN IN OR CREATE ACCOUNT</button>
       <button class="linkish" id="btn-settings-signout" style="display:none">Sign out</button>
       <button class="linkish warn" id="btn-settings-delete" style="display:none">Delete my account</button>
@@ -691,12 +710,13 @@
 
     <div class="card">
       <h2><span class="ic" data-ic="lock"></span> Private</h2>
-      <p class="sub">Your things and photos are saved privately on this device, and we never receive them. An account is only needed to buy Plus.</p>
+      <p class="sub">Your things and photos are saved privately on this device, and we never receive them. Signing in does not sync them to other devices. An account is only needed to buy Plus.</p>
     </div>
 
     <div class="card">
       <h2><span class="ic" data-ic="download"></span> Backup</h2>
-      <p class="sub">Download a backup file, or bring your things back from one.</p>
+      <p class="sub">Your things are saved only on this device and do not sync to other devices. A backup file is how you keep them safe or move them to a new phone.</p>
+      <p class="sub" id="backup-last" style="font-weight:800"></p>
       <button class="btn frame" id="btn-backup">Download a backup</button>
       <label class="btn ghost" style="margin-top:10px; cursor:pointer">Restore from a backup
         <input type="file" accept=".json,application/json" hidden id="restore-input">
@@ -1043,13 +1063,13 @@ function renderOtiiAccountUI(){
   if (signedIn){
     $("#otii-acct-email").textContent = otiiEmail;
     $("#otii-acct-title").textContent = plus ? "Plus account" : "Free account";
-    $("#otii-acct-sub").textContent = plus ? "Purchases are tied to this account." : "Upgrade below whenever you're ready.";
+    $("#otii-acct-sub").textContent = plus ? "Purchases are tied to this account." : "Upgrade below whenever you're ready. (Your saved things stay on this device — back them up in Settings.)";
   } else {
     $("#otii-acct-title").textContent = "Sign in first";
-    $("#otii-acct-sub").textContent = "A free account keeps Plus with you if you ever switch devices.";
+    $("#otii-acct-sub").textContent = "A free account keeps your Plus purchase with you on any device. It does not sync your saved things — use a backup for those.";
   }
   const settingsSub = $("#otii-settings-acct-sub");
-  if (settingsSub) settingsSub.textContent = signedIn ? "Signed in as " + otiiEmail : "Not signed in — Plus purchases work best with a free account.";
+  if (settingsSub) settingsSub.textContent = signedIn ? "Signed in as " + otiiEmail + ". Signing in does not sync your things between devices — use a backup to move them." : "Not signed in. Signing in does not sync your things between devices — it only keeps a Plus purchase with you.";
   const inBtn = $("#btn-settings-signin"), outBtn = $("#btn-settings-signout");
   if (inBtn) inBtn.style.display = signedIn ? "none" : "";
   if (outBtn) outBtn.style.display = signedIn ? "" : "none";
@@ -1164,6 +1184,7 @@ function go(name){
   if (name === "things") renderThings();
   if (name === "important") renderImportant();
   if (name === "settings") renderSettings();
+  renderBackupInfo();
 }
 
 /* ---------- Rendering ---------- */
@@ -1357,6 +1378,7 @@ function openAdd(edit){
   $("#f-notes").value = edit ? (edit.notes || "") : "";
   $("#loc-custom").value = "";
   $("#loc-custom-wrap").style.display = "none";
+  $("#add-details").open = !!(edit && (edit.photo || edit.photo2 || edit.spot || edit.notes || edit.important || (edit.category && edit.category !== "Other")));
   $$("#loc-chips .chip").forEach(c => c.classList.remove("on"));
   $$("#cat-chips .chip").forEach(c => c.classList.remove("on"));
   $$(".step").forEach(s => s.classList.remove("invalid"));
@@ -1519,7 +1541,18 @@ function downloadBackup(){
   a.download = "oh-there-it-is-backup.json";
   a.click();
   URL.revokeObjectURL(a.href);
+  try { localStorage.setItem("otii.lastBackup", String(Date.now())); localStorage.removeItem("otii.backupSnooze"); } catch(e){}
+  renderBackupInfo();
   toast("Backup downloaded.");
+}
+function renderBackupInfo(){
+  let last = 0, snooze = 0;
+  try { last = Number(localStorage.getItem("otii.lastBackup")) || 0; snooze = Number(localStorage.getItem("otii.backupSnooze")) || 0; } catch(e){}
+  const day = 86400000, now = Date.now();
+  const bl = $("#backup-last");
+  if (bl) bl.textContent = last ? "Last backup: " + new Date(last).toLocaleDateString() : "You have not made a backup yet.";
+  const r = $("#backup-reminder");
+  if (r) r.style.display = (activeItems().length && now - last > 14 * day && now > snooze) ? "" : "none";
 }
 async function restoreBackup(e){
   const file = e.target.files && e.target.files[0];
@@ -1600,7 +1633,7 @@ document.addEventListener("click", e => {
   }
 });
 
-$("#btn-get-started").addEventListener("click", () => go("home"));
+$("#btn-get-started").addEventListener("click", () => { if (items.length) go("home"); else openAdd(); });
 $("#home-search-form").addEventListener("submit", e => { e.preventDefault(); startFind($("#home-search").value); });
 $("#btn-find").addEventListener("click", () => startFind($("#home-search").value));
 $("#btn-add").addEventListener("click", () => openAdd());
@@ -1715,6 +1748,8 @@ $("#btn-delete").addEventListener("click", async e => {
 });
 
 $("#btn-backup").addEventListener("click", downloadBackup);
+$("#btn-backup-home").addEventListener("click", downloadBackup);
+$("#btn-backup-later").addEventListener("click", () => { try { localStorage.setItem("otii.backupSnooze", String(Date.now() + 7 * 86400000)); } catch(e){} renderBackupInfo(); });
 $("#restore-input").addEventListener("change", restoreBackup);
 $("#btn-erase").addEventListener("click", async e => {
   const btn = e.currentTarget;
@@ -1777,7 +1812,10 @@ $("#wl-optin-btn").addEventListener("click", () => {
 });
 dbAll().then(all => {
   items = all;
-  go("welcome");
+  // One front door only: returning users land on Home, brand-new users go straight to adding their first item.
+  let seen = false;
+  try { seen = !!localStorage.getItem("otii.seen"); localStorage.setItem("otii.seen", "1"); } catch(e){}
+  if (all.length || seen) go("home"); else openAdd();
   renderMeter();
   claimFromCheckout();
   if (!plus) restorePlus(false);
